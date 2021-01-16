@@ -1,8 +1,12 @@
 
  <!-- just to test if routing is ok -->
-<a [routerLink]="['/bar']" >
+<!-- <a [routerLink]="['/bar']" >
     link to user component
-  </a>
-<app-bar></app-bar>
+  </a> -->
+  <div class="container">
+    <app-bar [data] = "data" ></app-bar>
+    <app-pie [data] = "data"></app-pie>
+  </div>
+
 
 
