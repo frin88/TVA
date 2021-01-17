@@ -190,19 +190,5 @@ export class BarComponent implements OnInit {
 
   }
 
-  
-  //LOG SCALE
-  //scaleLog quando c'è troppa varianza --> default:10 ; domain >0 
-  // const y_log = d3.scaleLog()
-  // .domain([0, 200000])
-  // .range([this.height, 0])
-  // .base(10);
 
-  //TIMESCALE
-  // const y_time = d3.scaleTime()
-  // .domain([new Date(2010,1,1),new Date(2010,1,1)])
-  // .range([this.height, 0]);
-
-  //ORDINALSCALE
-  //domain and range are array of discrete elements
 }

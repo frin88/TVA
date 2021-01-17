@@ -28,8 +28,8 @@ export class ScatterComponent implements OnInit {
   private yAxisGroup;
   private yLabel;
 
-  private flag = true;
-  private field = "Stars";
+  public flag = true;
+  public field = "Stars";
   private data =
     [
       { "Framework": "Vue", "Likes": 10, "Stars": 166443, "Released": "2014" },
@@ -150,13 +150,6 @@ export class ScatterComponent implements OnInit {
 
   }
 
-public updateData()
-{
-  this.field = this.flag ? "Stars" : "Likes";
-    this.flag = !this.flag;
-    this.drawScatter(this.data);
-}
-
   private drawAxisLabels(): void {
 
     // xlabel
@@ -179,5 +172,14 @@ public updateData()
       .text("STARS");
 
   }
+
+  public updateData()
+{
+    this.field = this.flag ? "Stars" : "Likes";
+    this.flag = !this.flag;
+    this.drawScatter(this.data);
+}
+
+
 
 }

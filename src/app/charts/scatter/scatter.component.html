@@ -1,4 +1,8 @@
 <div class="chart-container">
     <figure id="scatter"></figure>
-    <button (click)="updateData()">Load</button>
+    <button  (click)="updateData()">
+        <span>{{ field == "Stars" ? "Likes" : "Stars"}}</span>
+      </button>
 </div>
+
+
