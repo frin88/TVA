@@ -11,69 +11,184 @@ import * as d3 from "d3";
 })
 export class BarComponent implements OnInit {
 
-@Input() data:any;
-private svg;
-private chart = new Chart();
-private margin = this.chart.margin;
+  //@Input() data: any;
+  private svg;
+  private chart = new Chart();
+  private margin = this.chart.margin;
 
-//inner
-private width = this.chart.width - (this.margin * 2);
-private height = this.chart.height  - (this.margin * 2);
+  //inner
+  private main;
+  private width = this.chart.width - (this.margin * 2);
+  private height = this.chart.height - (this.margin * 2);
 
-  
-constructor() { }
+  private updateInterval;
+
+  // scales and axes 
+  private x;
+  private xAxisGroup;
+  private y;
+  private yAxisGroup;
+  private yLabel;
+
+  private flag = true;
+  private field = "Stars";
+  private data =
+    [
+      { "Framework": "Vue", "Likes": 10, "Stars": 166443, "Released": "2014" },
+      { "Framework": "React", "Likes": 100, "Stars": 150793, "Released": "2013" },
+      { "Framework": "Angular", "Likes": 100, "Stars": 62342, "Released": "2016" },
+      { "Framework": "Backbone", "Likes": 200, "Stars": 27647, "Released": "2010" },
+      { "Framework": "Ember", "Likes": 50, "Stars": 21471, "Released": "2011" }
+    ];
+
+
+  // private data2 =
+  //   [
+  //     { "Framework": "Vue", "Stars": 166443, "Released": "2014" },
+  //     { "Framework": "React", "Stars": 150793, "Released": "2013" }
+  //   ];
+  constructor() {
+
+  }
 
   ngOnInit(): void {
+
     this.createSvg();
+    this.configureAxis();
     this.drawBars(this.data);
+
+
+    this.updateInterval = d3.interval(() => {
+      this.field = this.flag ? "Likes" : "Stars";
+      this.flag = !this.flag;
+      this.drawBars(this.data);
+    }, 2000);
+
   }
 
   private createSvg(): void {
     this.svg = d3.select("figure#bar")
-    .append("svg")
-    .attr("width", this.chart.width)
-    .attr("height",this.chart.height)
-    .append("g")
-    .attr("transform", "translate(" + this.margin + "," + this.margin + ")")
-    .attr("class","main"); //appendo group to svg taking in account margin
-}
+      .append("svg")
+      .attr("width", this.chart.width)
+      .attr("height", this.chart.height)
 
-private drawBars(data: any[]): void {
-
-  // Create the X-axis band scale
-  const x = d3.scaleBand()
-  .domain(data.map(d => d.Framework))
-  .range([0, this.width])
-  .padding(0.2);
-
-  // Draw the X-axis on the DOM
-  this.svg.append("g")
-  .attr("transform", "translate(0," + this.height + ")") //remember svg (0,0) 
-  .call(d3.axisBottom(x))
-  .selectAll("text")
-  .attr("transform", "translate(-10,0)rotate(-45)") 
-  .style("text-anchor", "end");
+    this.main = this.svg.append("g")
+      .attr("transform", "translate(" + this.margin + "," + this.margin + ")")
+      .attr("class", "main"); //appendo group to svg taking in account margin
+  }
 
 
-  // xlabel
-  d3.select(".main")
-  .append("text")
-  .attr("x",  this.width/2)
-  .attr("y", this.height + 70)
-  .attr("font-size", "12px")
-  .attr("text-anchor","middle")
-  .text("BAR CHART")
-  
+  private drawBars(data: any[]): void {
 
-////////////////////////////////////////////////////////////
- 
-//LINEAR SCALE
-// Create the Y-axis band scale  MAP domain into range Linear
-  const y = d3.scaleLinear()
-  .domain([0, 200000])
-  .range([this.height, 0]);
+    const t = d3.transition().duration(750);
 
-  //console.log(y.invert(48));
+    //domain X for new data
+    this.x.domain(data.map(d => d.Framework));
+
+    // Draw the X-axis on the DOM
+    const xAxisCall = d3.axisBottom(this.x);
+    this.xAxisGroup
+      .transition(t).call(xAxisCall)
+      .selectAll("text")
+      .attr("transform", "translate(-10,0)rotate(-45)")
+      .style("text-anchor", "end");
+
+    //domain Y for new data
+    this.y.domain([0, d3.max(data, d => d[this.field] + 100)]);
+    const YAxisCall = d3.axisLeft(this.y).ticks(3);
+    // Draw the Y-axis on the DOM
+    this.yAxisGroup
+      .transition(t)
+      .call(YAxisCall);
+
+    const txt = this.field;
+    this.yLabel.transition(t).text(txt);
+
+    /////////////////////////////////////////////////////////// 
+    // VIRTUAL SELECTOR
+    // enter all datapoints in array that not exists on the page
+    // exit all datapoints on the page but not in the datarray
+    // groups all the elements on the screen
+    ////////////////////////////////////////
+
+    //DATA JOIN
+    const rects = this.main.selectAll("rect").data(data, d => d.Framework); //trak by framework
+
+    //EXIT old elements
+    rects.exit()
+    .attr("fill","green")
+    .transition(t)
+      .attr("height",0)
+      .attr("y",this.y(0))
+      .remove();
+
+    //UPDATE  only attributes depending on data
+    // rects.
+    // transition(t)
+    // .attr("x", d => this.x(d.Framework))
+    //   .transition(t)
+    //   .attr("y", d => this.y(d[this.field]))
+    //   .attr("width", this.x.bandwidth())
+    //   .attr("height", (d) => this.height - this.y(d[this.field]));
+
+    //ENTER create new
+    rects
+      .enter()
+      .append("rect")
+      .attr("x", d => this.x(d.Framework))  
+      .attr("width", this.x.bandwidth())  
+      .attr("fill", "#d04a35")
+      .attr("fll-opacity", 1)
+      .attr("height",0)
+      .attr("y",this.y(0))
+      .merge(rects) // MERGE UPDATE remaining elements --> merge eseue sui nuovi e su quelli che rimangono
+      .transition(t)
+       .attr("y", d => this.y(d[this.field]))
+       .attr("height", (d) => this.height - this.y(d[this.field]))
+       .attr("fll-opacity", 0)
+
+
+  }
+  private configureAxis() {
+
+    this.x = d3.scaleBand()
+      .range([0, this.width])
+      .padding(0.2);
+
+    this.xAxisGroup = this.main.append("g")
+      .attr("transform", "translate(0," + this.height + ")") //remember svg (0,0) 
+
+    this.y = d3.scaleLinear()
+      .range([this.height, 0]);
+
+    this.yAxisGroup = this.main.append("g");
+
+    this.drawAxisLabels();
+
+
+  }
+  private drawAxisLabels(): void {
+
+    // xlabel
+    d3.select(".main")
+      .append("text")
+      .attr("x", this.width / 2)
+      .attr("y", this.height + 70)
+      .attr("font-size", "12px")
+      .attr("text-anchor", "middle")
+      .text("BAR CHART")
+
+    // Ylabel
+    this.yLabel = d3.select(".main")
+      .append("text")
+      .attr("x", -this.height / 2)
+      .attr("y", -60)
+      .attr("font-size", "12px")
+      .attr("transform", "rotate(-90)")
+      .attr("text-anchor", "middle")
+      .text("STARS");
+
+  }
 
   //LOG SCALE
   //scaleLog quando c'è troppa varianza --> default:10 ; domain >0 
@@ -82,51 +197,11 @@ private drawBars(data: any[]): void {
   // .range([this.height, 0])
   // .base(10);
 
-//TIMESCALE
-// const y_time = d3.scaleTime()
-// .domain([new Date(2010,1,1),new Date(2010,1,1)])
-// .range([this.height, 0]);
+  //TIMESCALE
+  // const y_time = d3.scaleTime()
+  // .domain([new Date(2010,1,1),new Date(2010,1,1)])
+  // .range([this.height, 0]);
 
-//ORDINALSCALE
-//domain and range are array of discrete elements
-
-  // Draw the Y-axis on the DOM
-  this.svg.append("g")
-  .call(d3.axisLeft(y).ticks(3));
-
-  
-  // Ylabel
-  d3.select(".main")
-  .append("text")
-   .attr("x", -this.height/2)
-   .attr("y",  -60)
-  .attr("font-size", "12px")
-  .attr("transform","rotate(-90)")
-  .attr("text-anchor","middle")
-  .text("STARS")
-   
-
- /////////////////////////////////////////////////////////// 
-  
- // Create and fill the bars
-  this.svg.selectAll("bar") // per ora sembra che questo non selezioni niente
-  .data(data)
-  .enter()
-  .append("rect")
-  .attr("x", d => x(d.Framework))
-  .attr("y", d => y(d.Stars))
-  .attr("width", x.bandwidth())
-  .attr("height", (d) => this.height - y(d.Stars))
-  .attr("fill", "#d04a35")
-  .exit()
-  .remove("rect");
-}
-
-// private loadNewData(){
-//   this.data=[
-//     {"Framework": "Vue", "Stars": "166443", "Released": "2014"},
-//     {"Framework": "React", "Stars": "150793", "Released": "2013"}];
-//    // this.drawBars(this.data);
-// }
-
+  //ORDINALSCALE
+  //domain and range are array of discrete elements
 }
