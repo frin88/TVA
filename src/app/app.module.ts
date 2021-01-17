@@ -5,6 +5,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { AppRoutingModule } from './app-routing.module';
 import { BarComponent } from './charts/bar/bar.component';
 import { PieComponent } from './charts/pie/pie.component';
+import { ScatterComponent } from './charts/scatter/scatter.component';
 
 
 @NgModule({
@@ -12,7 +13,8 @@ import { PieComponent } from './charts/pie/pie.component';
     AppComponent,
     BarComponent,
     DashboardComponent,
-    PieComponent
+    PieComponent,
+    ScatterComponent
     
   ],
   imports: [

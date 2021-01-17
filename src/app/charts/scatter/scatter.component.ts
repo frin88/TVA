@@ -1,15 +1,13 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Chart } from '../../models/Chart';
 import * as d3 from "d3";
 
-
-
 @Component({
-  selector: 'app-bar',
-  templateUrl: './bar.component.html',
-  styleUrls: ['./bar.component.scss']
+  selector: 'app-scatter',
+  templateUrl: './scatter.component.html',
+  styleUrls: ['./scatter.component.css']
 })
-export class BarComponent implements OnInit {
+export class ScatterComponent implements OnInit {
 
   //@Input() data: any;
   private svg;
@@ -41,29 +39,24 @@ export class BarComponent implements OnInit {
       { "Framework": "Ember", "Likes": 50, "Stars": 21471, "Released": "2011" }
     ];
 
-
-
-  constructor() {
-
-  }
+  constructor() { }
 
   ngOnInit(): void {
 
     this.createSvg();
     this.configureAxis();
-    this.drawBars(this.data);
+    this.drawScatter(this.data);
 
 
     this.updateInterval = d3.interval(() => {
       this.field = this.flag ? "Likes" : "Stars";
       this.flag = !this.flag;
-      this.drawBars(this.data);
+      this.drawScatter(this.data);
     }, 2000);
-
   }
 
   private createSvg(): void {
-    this.svg = d3.select("figure#bar")
+    this.svg = d3.select("figure#scatter")
       .append("svg")
       .attr("width", this.chart.width)
       .attr("height", this.chart.height)
@@ -73,8 +66,7 @@ export class BarComponent implements OnInit {
       .attr("class", "main"); //appendo group to svg taking in account margin
   }
 
-
-  private drawBars(data: any[]): void {
+  private drawScatter(data: any[]): void {
 
     const t = d3.transition().duration(750);
 
@@ -108,43 +100,37 @@ export class BarComponent implements OnInit {
     ////////////////////////////////////////
 
     //DATA JOIN
-    const rects = this.main.selectAll("rect").data(data, d => d.Framework); //trak by framework
+    const rects = this.main.selectAll("circle").data(data, d => d.Framework); //trak by framework
 
     //EXIT old elements
     rects.exit()
     .attr("fill","green")
     .transition(t)
-      .attr("height",0)
-      .attr("y",this.y(0))
+      .attr("r",0)
+      .attr("cy",this.y(0))
       .remove();
 
-    //UPDATE  only attributes depending on data
-    // rects.
-    // transition(t)
-    // .attr("x", d => this.x(d.Framework))
-    //   .transition(t)
-    //   .attr("y", d => this.y(d[this.field]))
-    //   .attr("width", this.x.bandwidth())
-    //   .attr("height", (d) => this.height - this.y(d[this.field]));
 
     //ENTER create new
     rects
       .enter()
-      .append("rect")
-      .attr("x", d => this.x(d.Framework))  
+      .append("circle")
       .attr("width", this.x.bandwidth())  
       .attr("fill", "#d04a35")
       .attr("fll-opacity", 1)
-      .attr("height",0)
-      .attr("y",this.y(0))
+      .attr("r",0)
+      .attr("cy",this.y(0))
       .merge(rects) // MERGE UPDATE remaining elements --> merge eseue sui nuovi e su quelli che rimangono
       .transition(t)
-       .attr("y", d => this.y(d[this.field]))
-       .attr("height", (d) => this.height - this.y(d[this.field]))
+       .attr("cy", d => this.y(d[this.field]))
+       .attr("r",5)
+       .attr("cx", d => this.x(d.Framework)  + this.x.bandwidth()/2)  
+      // .attr("r", (d) => this.height - this.y(d[this.field]))
        .attr("fll-opacity", 0)
 
 
   }
+
   private configureAxis() {
 
     this.x = d3.scaleBand()
@@ -163,6 +149,7 @@ export class BarComponent implements OnInit {
 
 
   }
+
   private drawAxisLabels(): void {
 
     // xlabel
@@ -186,18 +173,4 @@ export class BarComponent implements OnInit {
 
   }
 
-  //LOG SCALE
-  //scaleLog quando c'è troppa varianza --> default:10 ; domain >0 
-  // const y_log = d3.scaleLog()
-  // .domain([0, 200000])
-  // .range([this.height, 0])
-  // .base(10);
-
-  //TIMESCALE
-  // const y_time = d3.scaleTime()
-  // .domain([new Date(2010,1,1),new Date(2010,1,1)])
-  // .range([this.height, 0]);
-
-  //ORDINALSCALE
-  //domain and range are array of discrete elements
 }
