@@ -48,11 +48,11 @@ export class ScatterComponent implements OnInit {
     this.drawScatter(this.data);
 
 
-    this.updateInterval = d3.interval(() => {
-      this.field = this.flag ? "Likes" : "Stars";
-      this.flag = !this.flag;
-      this.drawScatter(this.data);
-    }, 2000);
+    // this.updateInterval = d3.interval(() => {
+    //   this.field = this.flag ? "Stars" : "Likes";
+    //   this.flag = !this.flag;
+    //   this.drawScatter(this.data);
+    // }, 2000);
   }
 
   private createSvg(): void {
@@ -150,19 +150,26 @@ export class ScatterComponent implements OnInit {
 
   }
 
+public updateData()
+{
+  this.field = this.flag ? "Stars" : "Likes";
+    this.flag = !this.flag;
+    this.drawScatter(this.data);
+}
+
   private drawAxisLabels(): void {
 
     // xlabel
-    d3.select(".main")
+    this.main
       .append("text")
       .attr("x", this.width / 2)
       .attr("y", this.height + 70)
       .attr("font-size", "12px")
       .attr("text-anchor", "middle")
-      .text("BAR CHART")
+      .text("SCATTER PLOT")
 
     // Ylabel
-    this.yLabel = d3.select(".main")
+    this.yLabel = this.main
       .append("text")
       .attr("x", -this.height / 2)
       .attr("y", -60)

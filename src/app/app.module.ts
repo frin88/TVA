@@ -6,6 +6,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { BarComponent } from './charts/bar/bar.component';
 import { PieComponent } from './charts/pie/pie.component';
 import { ScatterComponent } from './charts/scatter/scatter.component';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 
 @NgModule({
@@ -19,7 +20,9 @@ import { ScatterComponent } from './charts/scatter/scatter.component';
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    ReactiveFormsModule,
+    FormsModule
 
   ],
   providers: [],

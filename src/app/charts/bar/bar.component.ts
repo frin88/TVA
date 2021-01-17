@@ -21,7 +21,6 @@ export class BarComponent implements OnInit {
   private width = this.chart.width - (this.margin * 2);
   private height = this.chart.height - (this.margin * 2);
 
-  private updateInterval;
 
   // scales and axes 
   private x;
@@ -36,11 +35,12 @@ export class BarComponent implements OnInit {
     [
       { "Framework": "Vue", "Likes": 10, "Stars": 166443, "Released": "2014" },
       { "Framework": "React", "Likes": 100, "Stars": 150793, "Released": "2013" },
-      { "Framework": "Angular", "Likes": 100, "Stars": 62342, "Released": "2016" },
-      { "Framework": "Backbone", "Likes": 200, "Stars": 27647, "Released": "2010" },
+      { "Framework": "Angular", "Likes": 100, "Stars": 62342, "Released": "2014" },
+      { "Framework": "Backbone", "Likes": 200, "Stars": 27647, "Released": "2013" },
       { "Framework": "Ember", "Likes": 50, "Stars": 21471, "Released": "2011" }
     ];
 
+    public selectedYear =-1;
 
 
   constructor() {
@@ -53,12 +53,13 @@ export class BarComponent implements OnInit {
     this.configureAxis();
     this.drawBars(this.data);
 
+    this.field = this.flag ? "Likes" : "Stars";
 
-    this.updateInterval = d3.interval(() => {
-      this.field = this.flag ? "Likes" : "Stars";
-      this.flag = !this.flag;
-      this.drawBars(this.data);
-    }, 2000);
+    // this.updateInterval = d3.interval(() => {
+    //   this.field = this.flag ? "Likes" : "Stars";
+    //   this.flag = !this.flag;
+    //   this.drawBars(this.data);
+    // }, 2000);
 
   }
 
@@ -112,20 +113,12 @@ export class BarComponent implements OnInit {
 
     //EXIT old elements
     rects.exit()
-    .attr("fill","green")
+    .attr("fill","red")
     .transition(t)
       .attr("height",0)
       .attr("y",this.y(0))
       .remove();
 
-    //UPDATE  only attributes depending on data
-    // rects.
-    // transition(t)
-    // .attr("x", d => this.x(d.Framework))
-    //   .transition(t)
-    //   .attr("y", d => this.y(d[this.field]))
-    //   .attr("width", this.x.bandwidth())
-    //   .attr("height", (d) => this.height - this.y(d[this.field]));
 
     //ENTER create new
     rects
@@ -140,6 +133,8 @@ export class BarComponent implements OnInit {
       .merge(rects) // MERGE UPDATE remaining elements --> merge eseue sui nuovi e su quelli che rimangono
       .transition(t)
        .attr("y", d => this.y(d[this.field]))
+       .attr("x", d => this.x(d.Framework)) 
+       .attr("width", this.x.bandwidth())   
        .attr("height", (d) => this.height - this.y(d[this.field]))
        .attr("fll-opacity", 0)
 
@@ -166,7 +161,7 @@ export class BarComponent implements OnInit {
   private drawAxisLabels(): void {
 
     // xlabel
-    d3.select(".main")
+    this.main
       .append("text")
       .attr("x", this.width / 2)
       .attr("y", this.height + 70)
@@ -175,7 +170,7 @@ export class BarComponent implements OnInit {
       .text("BAR CHART")
 
     // Ylabel
-    this.yLabel = d3.select(".main")
+    this.yLabel = this.main
       .append("text")
       .attr("x", -this.height / 2)
       .attr("y", -60)
@@ -186,6 +181,16 @@ export class BarComponent implements OnInit {
 
   }
 
+
+  public onReleaseChange(event) :void
+  {
+    // console.log(this.selectedYear);
+    const filterd_data = this.selectedYear > -1 ? this.data.filter(d=> parseInt(d.Released) === this.selectedYear) :this.data;
+    this.drawBars(filterd_data);
+
+  }
+
+  
   //LOG SCALE
   //scaleLog quando c'è troppa varianza --> default:10 ; domain >0 
   // const y_log = d3.scaleLog()
