@@ -21,26 +21,29 @@ export class BarComponent implements OnInit {
   private width = this.chart.width - (this.margin * 2);
   private height = this.chart.height - (this.margin * 2);
 
-
   // scales and axes 
   private x;
   private xAxisGroup;
   private y;
   private yAxisGroup;
   private yLabel;
+  private legendGroup;
 
+
+  // data & defaults
   private flag = true;
   private field = "Stars";
+  public selectedYear = -1;
   private data =
     [
-      { "Framework": "Vue", "Likes": 10, "Stars": 166443, "Released": "2014" },
-      { "Framework": "React", "Likes": 100, "Stars": 150793, "Released": "2013" },
-      { "Framework": "Angular", "Likes": 100, "Stars": 62342, "Released": "2014" },
-      { "Framework": "Backbone", "Likes": 200, "Stars": 27647, "Released": "2013" },
-      { "Framework": "Ember", "Likes": 50, "Stars": 21471, "Released": "2011" }
+      { "Framework": "Vue", "Likes": 10, "Stars": 166443, "Released": "2014", "Color": "blue" },
+      { "Framework": "React", "Likes": 100, "Stars": 150793, "Released": "2013", "Color": "red" },
+      { "Framework": "Angular", "Likes": 100, "Stars": 62342, "Released": "2014", "Color": "yellow" },
+      { "Framework": "Backbone", "Likes": 200, "Stars": 27647, "Released": "2013", "Color": "green" },
+      { "Framework": "Ember", "Likes": 50, "Stars": 21471, "Released": "2011", "Color": "deeppink" }
     ];
 
-    public selectedYear =-1;
+
 
 
   constructor() {
@@ -50,7 +53,7 @@ export class BarComponent implements OnInit {
   ngOnInit(): void {
 
     this.createSvg();
-    this.configureAxis();
+    this.configureAxisAndLegend();
     this.drawBars(this.data);
 
     this.field = this.flag ? "Likes" : "Stars";
@@ -73,8 +76,6 @@ export class BarComponent implements OnInit {
       .attr("transform", "translate(" + this.margin + "," + this.margin + ")")
       .attr("class", "main"); //appendo group to svg taking in account margin
   }
-
-
   private drawBars(data: any[]): void {
 
     const t = d3.transition().duration(750);
@@ -101,6 +102,7 @@ export class BarComponent implements OnInit {
     const txt = this.field;
     this.yLabel.transition(t).text(txt);
 
+
     /////////////////////////////////////////////////////////// 
     // VIRTUAL SELECTOR
     // enter all datapoints in array that not exists on the page
@@ -109,14 +111,14 @@ export class BarComponent implements OnInit {
     ////////////////////////////////////////
 
     //DATA JOIN
-    const rects = this.main.selectAll("rect").data(data, d => d.Framework); //trak by framework
+    const rects = this.main.selectAll("rect.bars").data(data, d => d.Framework); //trak by framework
 
     //EXIT old elements
     rects.exit()
-    .attr("fill","red")
-    .transition(t)
-      .attr("height",0)
-      .attr("y",this.y(0))
+      .attr("fill", "red")
+      .transition(t)
+      .attr("height", 0)
+      .attr("y", this.y(0))
       .remove();
 
 
@@ -124,23 +126,64 @@ export class BarComponent implements OnInit {
     rects
       .enter()
       .append("rect")
-      .attr("x", d => this.x(d.Framework))  
-      .attr("width", this.x.bandwidth())  
-      .attr("fill", "#d04a35")
+      .attr("class", "bars")
+      .attr("x", d => this.x(d.Framework))
+      .attr("width", this.x.bandwidth())
+      .attr("fill", d => d.Color)
       .attr("fll-opacity", 1)
-      .attr("height",0)
-      .attr("y",this.y(0))
+      .attr("height", 0)
+      .attr("y", this.y(0))
       .merge(rects) // MERGE UPDATE remaining elements --> merge eseue sui nuovi e su quelli che rimangono
       .transition(t)
-       .attr("y", d => this.y(d[this.field]))
-       .attr("x", d => this.x(d.Framework)) 
-       .attr("width", this.x.bandwidth())   
-       .attr("height", (d) => this.height - this.y(d[this.field]))
-       .attr("fll-opacity", 0)
+      .attr("y", d => this.y(d[this.field]))
+      .attr("x", d => this.x(d.Framework))
+      .attr("width", this.x.bandwidth())
+      .attr("height", (d) => this.height - this.y(d[this.field]))
+      .attr("fll-opacity", 0);
 
+
+
+
+///////////////////////////////////////////////////////////////////
+
+    let lr = this.legendGroup.selectAll(".legendrow").data(data, d => d.Framework);
+
+   
+    lr.exit()
+      .transition(t)
+      .attr("width", 0)
+      .attr("height", 0)
+      .text("")
+      .attr("x", 0)
+      .attr("y", 0)
+      .remove();
+
+      // per ogni datapoint appendo un gruppo di classe legendrow scalato per index
+    let enter = lr.enter()
+      .append("g")
+      .attr("class", "legendrow")
+      .attr("transform", (d, i) => "translate(0," + i * 20 + ")");
+
+      // append multiple shapes al gruppo --> rect 
+      enter.append("rect")
+      .attr("width", 10)
+      .attr("height", 10)
+      .attr("fill", d => d.Color)
+     
+   // append multiple shapes al gruppo --> text 
+      enter.append("text")
+      .attr("x", 12)
+      .attr("y", 10)
+      .attr("text-anchor", "start")
+      .text(d => d.Framework)
+      
+      // al merge li riscalo
+      lr = lr.merge(enter)
+      .attr("transform", (d, i) => "translate(0," + i * 20 + ")");
+      
 
   }
-  private configureAxis() {
+  private configureAxisAndLegend() {
 
     this.x = d3.scaleBand()
       .range([0, this.width])
@@ -155,6 +198,12 @@ export class BarComponent implements OnInit {
     this.yAxisGroup = this.main.append("g");
 
     this.drawAxisLabels();
+
+    const legendX = this.width - 10;
+    const legendY = this.height - 200;
+    this.legendGroup = this.main
+      .append("g")
+      .attr("transform", "translate(" + legendX + "," + legendY + ")")
 
 
   }
@@ -180,12 +229,9 @@ export class BarComponent implements OnInit {
       .text("STARS");
 
   }
-
-
-  public onReleaseChange(event) :void
-  {
+  public onReleaseChange(event): void {
     // console.log(this.selectedYear);
-    const filterd_data = this.selectedYear > -1 ? this.data.filter(d=> parseInt(d.Released) === this.selectedYear) :this.data;
+    const filterd_data = this.selectedYear > -1 ? this.data.filter(d => parseInt(d.Released) === this.selectedYear) : this.data;
     this.drawBars(filterd_data);
 
   }
