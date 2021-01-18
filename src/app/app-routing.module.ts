@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AppComponent } from './app.component';
-import { BarComponent } from './bar/bar.component';
+import { BarComponent } from './charts/bar/bar.component';
+
 import { DashboardComponent } from './dashboard/dashboard.component';
 
 
