@@ -12,7 +12,13 @@ export class DashboardComponent implements OnInit {
 
   constructor(private dataService :DataService) { 
     
-    this.data = this.dataService.getData();
+    this.dataService.getData().subscribe((res: any) => {
+
+      this.data = res;
+      console.log(this.data);
+
+    });
+
 
   }
 

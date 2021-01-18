@@ -1,1 +1,12 @@
 /* You can add global styles to this file, and also import other style files */
+body, html {
+    height: 100vh;
+    background-image: url('assets/bkg.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+     overflow-y: hidden;
+   /* box-sizing: border-box;
+      border: 1px solid #979797;
+      background: linear-gradient(180deg, #0A1D19 0%, #184159 86.84%, #19435D 100%); */
+  }

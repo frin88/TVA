@@ -7,9 +7,9 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 
 
 const routes: Routes = [
-  { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
-  { path: 'dashboard', component: DashboardComponent },
-  { path: 'bar', component: BarComponent } // just to test if routing is ok
+  { path: '', redirectTo: '', pathMatch: 'full' },
+ { path: 'dashboard', component: DashboardComponent },
+  // { path: 'bar', component: BarComponent } // just to test if routing is ok
  
 
 ]
