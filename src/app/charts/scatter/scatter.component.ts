@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component,Input, OnInit } from '@angular/core';
 import { Chart } from '../../models/Chart';
 import * as d3 from "d3";
 
@@ -9,7 +9,7 @@ import * as d3 from "d3";
 })
 export class ScatterComponent implements OnInit {
 
-  //@Input() data: any;
+@Input() data: any;
   private svg;
   private chart = new Chart();
   private margin = this.chart.margin;
@@ -30,14 +30,14 @@ export class ScatterComponent implements OnInit {
 
   public flag = true;
   public field = "Stars";
-  private data =
-    [
-      { "Framework": "Vue", "Likes": 10, "Stars": 166443, "Released": "2014" },
-      { "Framework": "React", "Likes": 100, "Stars": 150793, "Released": "2013" },
-      { "Framework": "Angular", "Likes": 100, "Stars": 62342, "Released": "2016" },
-      { "Framework": "Backbone", "Likes": 200, "Stars": 27647, "Released": "2010" },
-      { "Framework": "Ember", "Likes": 50, "Stars": 21471, "Released": "2011" }
-    ];
+  // private data =
+  //   [
+  //     { "Framework": "Vue", "Likes": 10, "Stars": 166443, "Released": "2014" },
+  //     { "Framework": "React", "Likes": 100, "Stars": 150793, "Released": "2013" },
+  //     { "Framework": "Angular", "Likes": 100, "Stars": 62342, "Released": "2016" },
+  //     { "Framework": "Backbone", "Likes": 200, "Stars": 27647, "Released": "2010" },
+  //     { "Framework": "Ember", "Likes": 50, "Stars": 21471, "Released": "2011" }
+  //   ];
 
   constructor() { }
 
