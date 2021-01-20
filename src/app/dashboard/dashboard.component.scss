@@ -1,7 +1,9 @@
-.container{
+@import "~src/styles";
+.dashboard{
     display:flex;
     flex-direction: row;
     flex-wrap: wrap;
-    
-
+    height: 100vh;
+    border:3px solid deeppink;
+    padding:50px;
 }

@@ -1,0 +1,63 @@
+/* You can add global styles to this file, and also import other style files */
+@font-face {
+  font-family: 'Metropolis';
+    src: url('assets/fonts/Metropolis-Light.eot'); /* IE9 Compat Modes */
+    src: url('assets/fonts/Metropolis-Light.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+        url('assets/fonts/Metropolis-Light.woff2') format('woff2'), /* Super Modern Browsers */
+        url('assets/fonts/Metropolis-Light.woff') format('woff'), /* Pretty Modern Browsers */
+        url('assets/fonts/Metropolis-Light.ttf')  format('truetype'), /* Safari, Android, iOS */
+        url('assets/fonts/Metropolis-Light.svg#svgFontName') format('svg'); /* Legacy iOS */
+    font-weight: 400;
+    font-style: normal;
+}
+
+
+@font-face {
+  font-family: 'Metropolis';
+    src: url('assets/fonts/Metropolis-Semibold.eot'); /* IE9 Compat Modes */
+    src: url('assets/fonts/Metropolis-Semibold.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+        url('assets/fonts/Metropolis-Semibold.woff2') format('woff2'), /* Super Modern Browsers */
+        url('assets/fonts/Metropolis-Semibold.woff') format('woff'), /* Pretty Modern Browsers */
+        url('assets/fonts/Metropolis-Semibold.ttf')  format('truetype'), /* Safari, Android, iOS */
+        url('assets/fonts/Metropolis-Semibold.svg#svgFontName') format('svg'); /* Legacy iOS */
+    font-weight: 600;
+    font-style: normal;
+}
+
+
+
+$white: #fff;
+$black: #000;
+
+body, html {
+   font-family:'Metropolis';
+    height: 100vh;
+    background-image: url('assets/bkg.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+     overflow-y: hidden;
+   /* box-sizing: border-box;
+      border: 1px solid #979797;
+      background: linear-gradient(180deg, #0A1D19 0%, #184159 86.84%, #19435D 100%); */
+  }
+
+
+  
+ $theme-colors: (
+  white:$white,
+  light-green:#2AF598,
+  medium-green:rgba(17,54,71,0.6),
+  dark-green:#091D19,
+  light-gray:#D8D8D8,
+  gray:#979797
+);
+
+
+h1,h2,h3,h4,h5,h6{
+  font-family:'Metropolis';
+  font-weight: 600;
+  color: $white;
+  text-decoration: underline;
+}
+

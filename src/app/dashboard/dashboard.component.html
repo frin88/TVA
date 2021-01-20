@@ -1,13 +1,6 @@
+<div class="dashboard">
+  <h1> Asteroids of the day</h1>
+  <!-- qui ci saranno i filtri sul giorno, ancora da capire se in un loro componente o liberi -->
 
- <!-- just to test if routing is ok -->
-<!-- <a [routerLink]="['/bar']" >
-    link to user component
-  </a> -->
-  <div class="container">
-    <app-bar></app-bar>
-    <app-scatter></app-scatter>
-    <!-- <app-pie [data] = "data"></app-pie> -->
-  </div>
-
-
-
+  <app-scatter *ngIf="data$ | async" [data]="data"></app-scatter>
+</div>

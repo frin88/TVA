@@ -7,6 +7,8 @@ import { BarComponent } from './charts/bar/bar.component';
 import { PieComponent } from './charts/pie/pie.component';
 import { ScatterComponent } from './charts/scatter/scatter.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+
 
 
 @NgModule({
@@ -22,7 +24,8 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
     BrowserModule,
     AppRoutingModule,
     ReactiveFormsModule,
-    FormsModule
+    FormsModule,
+    HttpClientModule
 
   ],
   providers: [],
