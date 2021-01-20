@@ -9,13 +9,20 @@ import { DataService } from '../services/data.service';
 export class DashboardComponent implements OnInit {
 
   data:any;
+  days:any; 
 
   constructor(private dataService :DataService) { 
-    
+    // console.log('dashboard component is alive')
+   
     this.dataService.getData().subscribe((res: any) => {
-
       this.data = res;
       console.log(this.data);
+
+      for (let key in this.data) {
+        let value = this.data[key];
+        this.days.push(key);
+        console.log('ex', value,key);
+    }
 
     });
 
@@ -24,7 +31,7 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
 
-  
+   
   }
 
 }

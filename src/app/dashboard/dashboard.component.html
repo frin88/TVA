@@ -1,5 +1,6 @@
 <div class="dashboard">
   <h1> Asteroids of the day</h1>
-  <app-scatter [data]="data"></app-scatter>
+  <!-- qui ci saranno i filtri sul giorno, ancora da capire se in un loro componente o liberi -->
 
+  <app-scatter *ngIf="data$ | async" [data]="data"></app-scatter>
 </div>
