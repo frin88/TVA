@@ -29,21 +29,30 @@
 $white: #fff;
 $black: #000;
 
-body, html {
-   font-family:'Metropolis';
-    height: 100vh;
-    background-image: url('assets/bkg.svg');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-     overflow-y: hidden;
-   /* box-sizing: border-box;
-      border: 1px solid #979797;
-      background: linear-gradient(180deg, #0A1D19 0%, #184159 86.84%, #19435D 100%); */
-  }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, app-root {
+  height: 100%;
+  height: 100vh;
+}
+body {
+  font-family: "Metropolis";
+  margin: 0;
+  padding: 0;
+  background-image: url('assets/bkg.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+    
+}
 
 
-  
+
+
  $theme-colors: (
   white:$white,
   light-green:#2AF598,
@@ -55,9 +64,8 @@ body, html {
 
 
 h1,h2,h3,h4,h5,h6{
-  font-family:'Metropolis';
-  font-weight: 600;
+   font-weight: 600;
   color: $white;
-  text-decoration: underline;
+   text-decoration: underline;
 }
 

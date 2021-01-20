@@ -8,6 +8,7 @@ import { PieComponent } from './charts/pie/pie.component';
 import { ScatterComponent } from './charts/scatter/scatter.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
+import { Top5Component } from './charts/top5/top5.component';
 
 
 
@@ -17,7 +18,8 @@ import { HttpClientModule } from '@angular/common/http';
     BarComponent,
     DashboardComponent,
     PieComponent,
-    ScatterComponent
+    ScatterComponent,
+    Top5Component
     
   ],
   imports: [

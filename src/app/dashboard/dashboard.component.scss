@@ -1,9 +1,13 @@
 @import "~src/styles";
+
+
 .dashboard{
+    height: 100%;
+    width: 100%;
     display:flex;
     flex-direction: row;
-    flex-wrap: wrap;
-    height: 100vh;
-    border:3px solid deeppink;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    border:1px solid deeppink;
     padding:50px;
 }
