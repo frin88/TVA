@@ -9,21 +9,28 @@ import { DataService } from '../services/data.service';
 export class DashboardComponent implements OnInit {
 
   data: any;
+  data_array = new Array();
   days = new Array();
 
   constructor(private dataService: DataService) {
-    // console.log('dashboard component is alive')
 
     this.dataService.getData().subscribe((res: any) => {
-      this.data = res;
-      console.log(this.data);
+      console.log("untouched data", res);
 
-      for (let key in this.data) {
-        let value = this.data[key];
+      for (let key in res) {
+        res[key] = res[key].map(function (neo, i) {
+          return {
+            "distance_au": parseFloat(neo.close_approach_data[0].miss_distance.astronomical),
+            "velocity_ks": parseFloat(neo.close_approach_data[0].relative_velocity.kilometers_per_second),
+            "name": neo.name,
+            "magnitude": neo.absolute_magnitude_h,
+            "diameter": (parseFloat(neo.estimated_diameter.kilometers.estimated_diameter_min) + parseFloat(neo.estimated_diameter.kilometers.estimated_diameter_max)) / 2 //average
+          }
+
+        });
         this.days.push(key);
-        console.log('day',key, value);
       }
-
+      this.data = res;
     });
 
 

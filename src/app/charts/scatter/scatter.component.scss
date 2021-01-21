@@ -1,9 +1,40 @@
+@import "~src/styles";
+@import "~bootstrap/scss/mixins/_breakpoints";
 
+#scatter-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    #chart {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      width: 100%;
+    }
+  }
 
-.scatter-container{
-    border: 2px solid green;
-    flex: 3;
-    min-width: 500px;
-     height: 100%;
-     width: 100%;
-}
+// .scatter-container{
+//     border: 2px solid green;
+//       min-width: 1000px;
+//      flex:1;
+//      height: 100%;
+//      width: 100%;
+
+//      #chart {
+//         position: fixed;
+//         left: 0px;
+//         right: 0px;
+//         top: 0px;
+//         bottom: 0px;
+//       }
+// }
+
+// @include media-breakpoint-down(md) {
+ 
+//     .scatter-container{
+//          border: 2px solid yellow;
+//     }
+// }
