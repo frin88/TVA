@@ -37,6 +37,12 @@ export class ScatterComponent implements OnInit {
   private y;
   private d;
 
+  ///
+  private max_d;
+  private min_d;
+  private max_d_fixed = 50;
+
+
   //transition
   private t;
 
@@ -67,12 +73,8 @@ export class ScatterComponent implements OnInit {
   private createChart(data) {
 
     this.setChartDimensions();
-
     this.setScale();
-
     this.addGraphicsElement();
-
-
     this.addDots();
 
   }
@@ -92,17 +94,19 @@ export class ScatterComponent implements OnInit {
 
     // set viewbox = viewport => zoom = 0, resizable
     this.svg.attr('viewBox', '0 0 ' + this.viewport_width + ' ' + this.viewport_height);
+    this.svg.attr("preserveAspectRatio","xMinYMid");
     //console.log("svg width ", inner_width, " svg height", inner_height);
   }
 
 
   private addGraphicsElement() {
 
+    // main group
     this.g = this.svg.append("g")
       .attr("transform", "translate(0,0)");
 
 
-    ///////////////////////////////
+    ///////////  gridlines   ////////////////////
 
     const yAxisGenerator = d3.axisLeft(this.y)
       .ticks(3) // How many gridlines
@@ -119,7 +123,80 @@ export class ScatterComponent implements OnInit {
     yAxis.selectAll("text").remove()
     yAxis.select(".domain").remove();
 
-    /////////////////////
+    /////////////////////////////////////////
+
+    ///////////  legend   ////////////////////
+
+    const x_legend = this.inner_width - 150;
+    const dataLegend = [
+      {
+        "value": this.min_d,
+        "label": "Min Km"
+      },
+      {
+        "value": this.max_d,
+        "label": "Max Km"
+      },];
+
+    const legendGroup = this.svg.append("g")
+      .attr("class", "legend")
+      .attr("transform", "translate(" + x_legend + "  , 0)");
+
+    legendGroup
+      .append("text")
+      .attr("class", "bold")
+      .attr("x", 0)
+      .attr("y", 12)
+      .attr("text-anchor", "start")
+      .text("DIAMETER")
+
+
+    const legend_items = legendGroup.selectAll("circle")
+      .data(dataLegend);
+
+    //EXIT old elements
+    legend_items.exit()
+      .attr("fill", "green")
+      .transition(this.t)
+      .attr("r", 0)
+      .remove();
+
+
+    //ENTER create new
+    legend_items
+      .enter()
+      .append("circle")
+      .attr("class", "legend-dot")
+      .attr("class", "dot")
+      .style("fill", "url(#dot-gradient)")
+      .attr("r", d => this.d(d.value))
+      .attr("cy", this.max_d_fixed + 2) // max_d_fixed cosi il più grande è sempre dentro
+      .attr("cx", (d, i) => i * 120 + 10);
+
+
+    const legendCenters = legendGroup.selectAll(".legend-dot")
+      .data(dataLegend)
+      .enter();
+
+     legendCenters.append("circle")
+      .attr("class", "center-legend")
+      .style("fill", "#2AF598")
+      .attr("r", 1)
+      .attr("cy", this.max_d_fixed +2 )
+      .attr("cx", (d, i) => i * 120 + 10 );
+     
+      legendCenters.append("text")
+        .attr("x", (d, i) => i * 120 + 20)
+        .attr("y", this.max_d_fixed + 2)
+        .attr("text-anchor", "start")
+        .attr("class","text")
+        .text( d=> d.label)
+
+    ////////////////////////////////////////////
+
+
+
+
     this.defineDotGradient();
 
 
@@ -130,10 +207,10 @@ export class ScatterComponent implements OnInit {
     const max_x = parseFloat(d3.max(this.data, d => d["velocity_ks"]));
     const max_y = parseFloat(d3.max(this.data, d => d["distance_au"]));
 
-    const max_d = parseFloat(d3.max(this.data, d => d["diameter"]));
-    const min_d = parseFloat(d3.min(this.data, d => d["diameter"]));
+    this.max_d = parseFloat(d3.max(this.data, d => d["diameter"]));
+    this.min_d = parseFloat(d3.min(this.data, d => d["diameter"]));
 
-    console.log(min_d, max_d);
+    //console.log(min_d, max_d);
 
     this.x = d3.scaleLinear()
       .domain([0, max_x])
@@ -144,8 +221,8 @@ export class ScatterComponent implements OnInit {
       .range([this.inner_height, this.margin_top]);
 
     this.d = d3.scaleSqrt()
-      .domain([0, max_d])
-      .range([1, 50]);
+      .domain([0, this.max_d])
+      .range([1, this.max_d_fixed]); // max_d_fixed reference point for legend
 
 
   }
