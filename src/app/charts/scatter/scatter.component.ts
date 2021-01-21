@@ -127,7 +127,7 @@ export class ScatterComponent implements OnInit {
 
     ///////////  legend   ////////////////////
 
-    const x_legend = this.inner_width - 150;
+    const x_legend = this.inner_width - 200;
     const dataLegend = [
       {
         "value": this.min_d,
@@ -145,7 +145,7 @@ export class ScatterComponent implements OnInit {
     legendGroup
       .append("text")
       .attr("class", "bold")
-      .attr("x", 0)
+      .attr("x", 50)
       .attr("y", 12)
       .attr("text-anchor", "start")
       .text("DIAMETER")
@@ -171,7 +171,7 @@ export class ScatterComponent implements OnInit {
       .style("fill", "url(#dot-gradient)")
       .attr("r", d => this.d(d.value))
       .attr("cy", this.max_d_fixed + 2) // max_d_fixed cosi il più grande è sempre dentro
-      .attr("cx", (d, i) => i * 120 + 10);
+      .attr("cx", (d, i) => i * 130 +50 );
 
 
     const legendCenters = legendGroup.selectAll(".legend-dot")
@@ -183,10 +183,10 @@ export class ScatterComponent implements OnInit {
       .style("fill", "#2AF598")
       .attr("r", 1)
       .attr("cy", this.max_d_fixed +2 )
-      .attr("cx", (d, i) => i * 120 + 10 );
+      .attr("cx", (d, i) => i * 130 +50 );
      
       legendCenters.append("text")
-        .attr("x", (d, i) => i * 120 + 20)
+        .attr("x", (d, i) => i * 130 + 55)
         .attr("y", this.max_d_fixed + 2)
         .attr("text-anchor", "start")
         .attr("class","text")
