@@ -19,21 +19,26 @@ export class ScatterComponent implements OnInit {
   ///////////////////////
 
   // size of svg element
-  private viewport_width; 
+  private viewport_width;
   private viewport_height;
   // size of viz
   private inner_width;
   private inner_height;
   //margin (inner = viewport - margin*2)
-  private margin_side = 100;
-  private margin_top = 100;
+  private margin_side = 50;
+  private margin_top = 60;
   //////////////////////////
 
   private hostElement; // Native element hosting the SVG container
   private g; // SVG Group element
 
+  // scales
   private x;
   private y;
+  private d;
+
+  //transition
+  private t;
 
 
 
@@ -45,9 +50,9 @@ export class ScatterComponent implements OnInit {
 
   ngOnInit(): void {
 
-   
-     this.data = this.data[this.selectedDay];
-     console.log('scatter alive', this.data);
+
+    this.data = this.data[this.selectedDay];
+    console.log('scatter alive', this.data);
     this.updateChart(this.data);
 
   }
@@ -66,6 +71,7 @@ export class ScatterComponent implements OnInit {
     this.setScale();
 
     this.addGraphicsElement();
+
 
     this.addDots();
 
@@ -91,8 +97,32 @@ export class ScatterComponent implements OnInit {
 
 
   private addGraphicsElement() {
+
     this.g = this.svg.append("g")
       .attr("transform", "translate(0,0)");
+
+
+    ///////////////////////////////
+
+    const yAxisGenerator = d3.axisLeft(this.y)
+      .ticks(3) // How many gridlines
+      .tickSizeInner(-this.inner_width) // Ticks in between the outer ticks
+      .tickSizeOuter(0);// Ticks on both outer sides
+
+
+    const yAxis = this.g
+      .append("g")
+      .attr("transform", "translate(0,0)")
+      .call(yAxisGenerator);
+
+    //hide domain and labels
+    yAxis.selectAll("text").remove()
+    yAxis.select(".domain").remove();
+
+    /////////////////////
+    this.defineDotGradient();
+
+
   }
 
   private setScale() {
@@ -100,26 +130,61 @@ export class ScatterComponent implements OnInit {
     const max_x = parseFloat(d3.max(this.data, d => d["velocity_ks"]));
     const max_y = parseFloat(d3.max(this.data, d => d["distance_au"]));
 
+    const max_d = parseFloat(d3.max(this.data, d => d["diameter"]));
+    const min_d = parseFloat(d3.min(this.data, d => d["diameter"]));
+
+    console.log(min_d, max_d);
+
     this.x = d3.scaleLinear()
       .domain([0, max_x])
       .range([0, this.inner_width]);
 
     this.y = d3.scaleLinear()
       .domain([0, max_y])
-      .range([this.inner_height, this.margin_top])
+      .range([this.inner_height, this.margin_top]);
+
+    this.d = d3.scaleSqrt()
+      .domain([0, max_d])
+      .range([1, 50]);
+
+
   }
 
 
+  private defineDotGradient() {
+
+    const defs = this.svg.append("defs");
+
+    //Create  gradient
+    defs.append("radialGradient")
+      .attr("id", "dot-gradient")
+      .attr("cx", "50%")	//not really needed, since 50% is the default
+      .attr("cy", "50%")
+      .attr("r", "50%")
+      .selectAll("stop")
+      .data([
+        { offset: "0%", color: "rgba(42,245,152,0)" },
+        { offset: "50%", color: "rgba(42,245,152,0.03)" },
+        { offset: "100%", color: "rgba(42,245,152,0.06)" },
+      ])
+      .enter().append("stop")
+      .attr("offset", function (d) { return d.offset; })
+      .attr("stop-color", function (d) { return d.color; });
+  }
+
   private addDots() {
+
+    this.t = d3.transition().duration(750);
+
+
     const circles = this.g.selectAll("circle")
       .data(this.data, d => d.name); //trak by name
 
     //EXIT old elements
     circles.exit()
       .attr("fill", "green")
-      //.transition(t)
-      .attr("r", 80)
-      .attr("cy", d => this.y(d.distance_au))
+      .transition(this.t)
+      .attr("r", 0)
       .remove();
 
 
@@ -127,13 +192,25 @@ export class ScatterComponent implements OnInit {
     circles
       .enter()
       .append("circle")
-      .attr("fill", "#d04a35")
-      //.attr("fll-opacity", 1)
-      // .attr("r", d => this.d(d.diameter))
-      .attr("r", 5)
+      .attr("class", "dot")
+      .style("fill", "url(#dot-gradient)")
+      .attr("r", d => this.d(d.diameter))
+      .attr("cy", d => this.y(d.distance_au))
+      .attr("cx", d => this.x(d.velocity_ks))
+
+
+    const centers = this.g.selectAll(".center")
+      .data(this.data, d => d.name)
+      .enter()
+      .append("circle")
+      .attr("class", "center")
+      .style("fill", "#2AF598")
+      .attr("r", 1)
       .attr("cy", d => this.y(d.distance_au))
       .attr("cx", d => this.x(d.velocity_ks));
-
   }
+
+
+
 
 }

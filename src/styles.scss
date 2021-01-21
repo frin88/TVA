@@ -26,9 +26,6 @@
 
 
 
-$white: #fff;
-$black: #000;
-
 * {
   margin: 0;
   padding: 0;
@@ -52,28 +49,29 @@ body {
 
 
 
-
- $theme-colors: (
-  white:$white,
-  light-green:#2AF598,
-  medium-green:rgba(17,54,71,0.6),
-  dark-green:#091D19,
-  light-gray:#D8D8D8,
-  gray:#979797
-);
+  $white:#FFFFFF;
+  $light-green:#2AF598;
+  $medium-green:rgba(17,54,71,0.6);
+  $dark-green:#091D19;
+  $light-gray:#D8D8D8;
+  $gray:#979797;
 
 
-.h1,.h2,.h3,.h4,.h5,.h6{
-   font-weight: 600;
-    fill: $white;
-   text-decoration: underline;
-   font-size: 20px;
-}
+
+// .h1,.h2,.h3,.h4,.h5,.h6{
+//    font-weight: 600;
+//     fill: $white;
+//    text-decoration: underline;
+//    font-size: 20px;
+// }
+
+
 
 .text{
-  fill:$white;
-  font-size: 10px;
+  color:$white;
+  //font-size: 10px;
 }
+
 
 h1,h2,h3,h4,h5,h6{
   font-weight: 600;

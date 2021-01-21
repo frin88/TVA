@@ -17,12 +17,12 @@ export class DataService {
 
   public getData(): Observable<any> {
 
-    // const today= new Date(new Date().setDate(new Date().getDate() - 6));
-    // let day = ("0" + today.getDate()).slice(-2);
-    // let month = ("0" + (today.getMonth() + 1)).slice(-2);
-    // let year = today.getFullYear();
-    //const string_date = year + '-' + month + '-' + day;
-    const string_date = "2021-01-16";
+    const today= new Date(new Date().setDate(new Date().getDate() - 6));
+    let day = ("0" + today.getDate()).slice(-2);
+    let month = ("0" + (today.getMonth() + 1)).slice(-2);
+    let year = today.getFullYear();
+    const string_date = year + '-' + month + '-' + day;
+    //const string_date = "2021-01-16";
     console.log('requesting data for sart_date : ' , string_date);
     //filtering result for near_earth_objects
     return this.httpClient.get<any>(this.env.apiUrl + '?api_key=' + this.env.apiKey + '&start_date='+ string_date).pipe(

@@ -17,10 +17,7 @@
     background-color: transparent;
     padding: 40px;
 
-    h1{
-        align-self: flex-start;
-    }
-
+   
     #dayAsteroids {
         height: 90vh;
         min-height: 400px;
@@ -30,9 +27,25 @@
         align-items: center;
         width: 100%;
         position: relative;
+        flex:3;
+        border-right: 0.25px solid $white;
+        
+        div:first-of-type {
+        align-self: flex-start;
+        //padding: 10px;
+            h1{margin-bottom: 10px; }
+            
+            .btn-container{
+                display: flex;
+                flex-direction: row;
+                justify-content: space-around;
+                padding: 10px;
+            }
+
+        }
        
 
-        
+      
 
         #chartAndDataContainer {
             position: relative;
@@ -43,6 +56,50 @@
             height: 100%;
             width: 100%;
             #chartContainer {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex: 1;
+                height: 100%;
+                width: 100%;
+                app-scatter {
+                    display: flex;
+                   // justify-content: center;
+                   // align-items: center;
+                    height: 100%;
+                    width: 100%;
+                }
+            }
+ 
+        }
+    }
+
+
+    #weekMagnitudo {
+        height: 90vh;
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        position: relative;
+        flex:1;
+       
+        h1{
+            align-self: "middle";
+        }
+        
+
+        #chartAndDataContainer_ {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: transparent;
+            height: 100%;
+            width: 100%;
+            #chartContainer_ {
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -62,54 +119,5 @@
     }
 }
 
-// .show-data {
-//     position: absolute;
-//     top: 1rem;
-//     right: 1rem;
-// }
 
 
-// @media screen and (max-width: 767px) {
-//     .container {
-//         .title {
-//             font-size: 1.5rem;
-//         }
-//     }
-// }
-
-// @media screen and (max-width: 414px) {
-//     .container {
-//         .title {
-//             font-size: 1rem;
-//         }
-//     }
-// }
-
-// .dashboard{
-//     height: 100%;
-//     width: 100%;
-//     display:flex;
-//     flex-direction: row;
-//     flex-wrap: nowrap;
-//     justify-content: space-between;
-//     border:1px solid deeppink;
-//     padding:10px;
-
-    
-// }
-
-
-// @include media-breakpoint-down(md) {
-//     .dashboard{
-//         height: 100%;
-//         width: 100%;
-//         display:flex;
-//         flex-direction: column;
-//         flex-wrap: nowrap;
-//         justify-content: space-between;
-//         border:1px solid deepskyblue;
-//         padding:50px;
-//     }
-    
-
-//   }
