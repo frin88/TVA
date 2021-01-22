@@ -15,8 +15,6 @@ export class ScatterComponent implements OnInit {
   //X VELOCITA
   //Y DISTANZA
   @Input() _data: any;
-
-
   ///////////////////////
 
   private hostElement; // Native element hosting the SVG container
@@ -41,7 +39,6 @@ export class ScatterComponent implements OnInit {
   private btn_r = 20;
   private btnGroup_offset_x = -this.margin_side + this.btn_r;
 
-
   // scales
   private x;
   private y;
@@ -52,19 +49,17 @@ export class ScatterComponent implements OnInit {
   private min_d;
   private max_d_fixed = 50; // this controls max circles sizes
 
-
   //transitions
   private t;
   private btn_transition_timing = 200;
 
   ////
-
   private selectedDay;
   private data_week; // data for all week
   private data; // data for single day
-
-
   private day_array = [];
+
+  private tip;
 
   constructor(private elRef: ElementRef) {
     this.hostElement = this.elRef.nativeElement;
@@ -86,7 +81,6 @@ export class ScatterComponent implements OnInit {
 
   }
 
- 
 
   private fillDaysStruct() {
 
@@ -148,12 +142,36 @@ export class ScatterComponent implements OnInit {
     // main group
     this.g = this.svg.append("g")
       .attr("transform", "translate(0," + this.chartOffset + ")") // move down to make space to buttons
-      .attr("class", "main")
+      .attr("class", "main");
+
+    this.addTooltip();
     this.addBtnGroup();
     this.defineDotGradient();
     this.addGridLines();
     this.addLegend();
+
   }
+
+  private addTooltip() {
+
+
+    // html tooltip vs g tooltip
+    // https://stackoverflow.com/questions/43613196/using-div-tooltips-versus-using-g-tooltips-in-d3/43619702
+
+    // i chose html for simplicity now
+    this.tip = d3.select(this.hostElement).append("div")
+      .attr("class", "tooltip hidden text")
+      .style("position", "absolute")
+      .style("opacity", 0)
+
+    //   this.tip =this.svg.append("g")
+    //   .attr("class", "tooltip hidden")
+    //   .style("opacity", 0)
+
+  }
+
+
+
 
   private addGridLines() {
 
@@ -262,25 +280,26 @@ export class ScatterComponent implements OnInit {
 
     const btn_wrap = buttons.enter()
       .append("g")
-      .attr("class", "btn-wrap");
-    
+      .attr("class", "btn-wrap")
+      .style('cursor', 'pointer');
+
     btn_wrap
       .append("circle")
-      .attr("class",  (d) => d.value !== this.selectedDay ? "day-btn" :"day-btn__selected")
+      .attr("class", (d) => d.value !== this.selectedDay ? "day-btn" : "day-btn__selected")
       .attr("r", this.btn_r)
       .attr("cy", 30)
       .attr("cx", (d, i) => this.calc_btn_x(d, i));
-  
-      //day-lbl
+
+    //day-lbl
 
     btn_wrap
       .append("text")
       .attr("x", (d, i) => this.calc_btn_x(d, i))
       .attr("y", 30)
-      .attr("class",  (d) => d.value !== this.selectedDay ? "text day-lbl" :"text day-lbl__selected")
+      .attr("class", (d) => d.value !== this.selectedDay ? "text day-lbl" : "text day-lbl__selected")
       .style('font-size', this.btn_r * 0.6 + 'px')
       .attr('alignment-baseline', 'middle')
-      .attr("text-anchor","middle")
+      .attr("text-anchor", "middle")
       //.attr("class", "text day-lbl")
       .text(d => d.label);
 
@@ -295,9 +314,8 @@ export class ScatterComponent implements OnInit {
   }
 
   private calc_btn_x(d, i) {
-    return i * 60 + this.btn_r * 1.1
+    return i * 52 + this.btn_r * 1.1 + 3
   }
-
 
 
   private onDayMouseover(ev) {
@@ -320,7 +338,7 @@ export class ScatterComponent implements OnInit {
   }
 
   private onDayClik(ev) {
-    console.log(ev.currentTarget);
+    //console.log(ev.currentTarget);
 
     //reset prev selection
     d3.selectAll(".day-lbl__selected")
@@ -340,7 +358,7 @@ export class ScatterComponent implements OnInit {
       .attr("class", " day-lbl__selected")
 
     // updat selected day
-    var new_sel = target_el.data();
+    let new_sel = target_el.data();
 
 
     if (new_sel[0]["value"] !== this.selectedDay) {
@@ -401,6 +419,37 @@ export class ScatterComponent implements OnInit {
       .attr("stop-color", function (d) { return d.color; });
   }
 
+  private showTooltip(yoffset, ev) {
+
+
+    console.log("show tooltip" ,ev.currentTarget);
+    const t = d3.transition().duration(500);
+    const d = d3.select(ev.currentTarget).data()[0];
+    var f = d3.format(".2f");
+
+    const html = '<p>Name: ' + d["name"] + '</p>' +
+      '<p>Diameter: ' + f(d["diameter"]) + ' km</p>' +
+      '<p>Magnitude: ' + f(d["magnitude"]) + ' h</p>' +
+      '<p>Distance: ' + f(d["distance_au"]) + ' au</p>' +
+      '<p>Velocity: ' + f(d["velocity_ks"]) + ' km/s</p>';
+
+
+    d3.select(".tooltip")
+      .html(html)
+      .classed("hidden", false)
+      .style("left", d3.pointer(ev)[0] + "px")
+      .style("top", d3.pointer(ev)[1] + yoffset + "px")  //+ l'offset del chart
+      .transition(t)  
+      .style("opacity", .9)
+
+
+  }
+
+  private hideTooltip(ev) {
+    console.log("hide tooltip",(ev.currentTarget));
+    d3.select(".tooltip")
+      .classed("hidden", true);
+  }
 
   private addDots() {
 
@@ -421,6 +470,7 @@ export class ScatterComponent implements OnInit {
             .attr("cx", d => _that.x(d.velocity_ks))
             .transition(t)
             .attr("r", d => _that.d(d.diameter))
+            
 
           enter.append("circle")
             .attr("class", "center")
@@ -429,6 +479,10 @@ export class ScatterComponent implements OnInit {
             .attr("cx", d => _that.x(d.velocity_ks))
             .transition(t)
             .attr("r", 1);
+
+          enter
+            .on("mouseover", _that.showTooltip.bind(this, _that.chartOffset))
+            .on("mouseout", _that.hideTooltip.bind(this));
 
           return enter;
         },
@@ -441,7 +495,7 @@ export class ScatterComponent implements OnInit {
             .transition(t)
             .attr("r", 0).remove();
 
-            group.select(".center")
+          group.select(".center")
             .transition(t)
             .attr("r", 0).remove();
 

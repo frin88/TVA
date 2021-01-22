@@ -60,6 +60,7 @@
             height: 100%;
             width: 100%;
             #chartContainer {
+                position: relative; // for tooltip
                 display: flex;
                 justify-content: center;
                 align-items: center;
