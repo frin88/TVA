@@ -1,5 +1,8 @@
+
 @import "~src/styles";
-@import "~bootstrap/scss/mixins/_breakpoints";
+
+
+
 
 :host {
     display: flex;
@@ -15,7 +18,10 @@
     flex-direction: row;
     justify-content: space-evenly;
     background-color: transparent;
-    padding: 40px;
+    padding: 2%;
+    // @include media-breakpoint-down(md) {
+    //     flex-direction: column;
+    // }
 
    
     #dayAsteroids {
@@ -32,9 +38,7 @@
         
         div:first-of-type {
         align-self: flex-start;
-        //padding: 10px;
             h1{margin-bottom: 10px; }
-            
             .btn-container{
                 display: flex;
                 flex-direction: row;
@@ -72,6 +76,8 @@
             }
  
         }
+
+   
     }
 
 
@@ -117,7 +123,12 @@
  
         }
     }
-}
 
+// @include media-breakpoint-down(md) {
+//     #dayAsteroids{ 
+//         border:1px solid deepskyblue;  
+//     }
+// }
+}
 
 

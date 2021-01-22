@@ -1,13 +1,36 @@
 @import "~src/styles";
-@import "~bootstrap/scss/mixins/_breakpoints";
+
 
 .dot{
   fill:none;
   stroke:$light-green;
    box-shadow: 0 0 8px 0 rgba(42,245,152,0.6);
  //stroke: 1px solid $light-green;
-
 }
+
+.day-btn{
+  fill:transparent;
+  stroke: $white;
+  font-weight: normal;
+
+  &__selected{
+
+    fill:$light-green
+  }
+}
+
+.day-lbl{
+  &__selected{
+    fill:$black
+  }
+}
+
+// .day-btn{
+//   fill:transparent;
+//   stroke: $white;
+//   font-weight: normal;
+// }
+
 
 
 line{stroke-width:1;}
@@ -19,8 +42,6 @@ line{stroke-width:1;}
 //   width: 89px;
 //   border: 1px solid #2AF598;
 //   background: 
-
-
 //radial-gradient(circle, rgba(42,245,152,0) 0%, rgba(42,245,152,0.03) 48.36%, rgba(42,245,152,0.06) 100%);
 //   box-shadow: 0 0 8px 0 rgba(42,245,152,0.6);
 // }

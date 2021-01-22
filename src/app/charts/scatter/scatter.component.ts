@@ -14,37 +14,46 @@ export class ScatterComponent implements OnInit {
   //X VELOCITA
   //Y DISTANZA
   @Input() data: any;
-  private svg;
 
   ///////////////////////
+
+  private hostElement; // Native element hosting the SVG container
+  private g; // SVG Group element
+  private svg;
 
   // size of svg element
   private viewport_width;
   private viewport_height;
+
   // size of viz
   private inner_width;
   private inner_height;
-  //margin (inner = viewport - margin*2)
-  private margin_side = 50;
-  private margin_top = 60;
+
+  //margin => inner = viewport - margin*2
+  private margin_side = 30;
+  private margin_top = 5;
   //////////////////////////
 
-  private hostElement; // Native element hosting the SVG container
-  private g; // SVG Group element
+  private btnGroup_height = 130; // to do da rinominare è la y del chart 
+  private btnGroup_offset_y = 30;
+  private btn_r = 20;
+  private btnGroup_offset_x = -this.margin_side + this.btn_r;
+
 
   // scales
   private x;
   private y;
   private d;
 
-  ///
+  ///diameter
   private max_d;
   private min_d;
-  private max_d_fixed = 50;
+  private max_d_fixed = 50; // this controls max circles sizes
 
 
-  //transition
+  //transitions
   private t;
+  private btn_transition_timing = 200;
 
 
 
@@ -90,23 +99,34 @@ export class ScatterComponent implements OnInit {
     this.viewport_height = parseInt(this.svg.style("height"));
 
     this.inner_width = parseInt(this.svg.style("width")) - (this.margin_side * 2);
-    this.inner_height = parseInt(this.svg.style("height")) - (this.margin_top * 2);
+    this.inner_height = parseInt(this.svg.style("height")) - (this.margin_top * 2) - this.btnGroup_height - this.btnGroup_offset_y;
 
     // set viewbox = viewport => zoom = 0, resizable
     this.svg.attr('viewBox', '0 0 ' + this.viewport_width + ' ' + this.viewport_height);
-    this.svg.attr("preserveAspectRatio","xMinYMid");
+    this.svg.attr("preserveAspectRatio", "xMinYMid");
     //console.log("svg width ", inner_width, " svg height", inner_height);
   }
 
 
   private addGraphicsElement() {
 
+
     // main group
     this.g = this.svg.append("g")
-      .attr("transform", "translate(0,0)");
+      .attr("transform", "translate(0," + this.btnGroup_height + ")"); // move down to make space to buttons
 
 
-    ///////////  gridlines   ////////////////////
+
+
+    /////////////////////
+
+    this.addBtnGroup();
+    this.defineDotGradient();
+    this.addGridLines();
+    this.addLegend();
+  }
+
+  private addGridLines() {
 
     const yAxisGenerator = d3.axisLeft(this.y)
       .ticks(3) // How many gridlines
@@ -116,28 +136,22 @@ export class ScatterComponent implements OnInit {
 
     const yAxis = this.g
       .append("g")
-      .attr("transform", "translate(0,0)")
+      // .attr("transform", "translate(0,0)")
       .call(yAxisGenerator);
 
     //hide domain and labels
     yAxis.selectAll("text").remove()
     yAxis.select(".domain").remove();
+  }
 
-    /////////////////////////////////////////
 
-    ///////////  legend   ////////////////////
+  private addLegend() {
+
 
     const x_legend = this.inner_width - 200;
-    const dataLegend = [
-      {
-        "value": this.min_d,
-        "label": "Min Km"
-      },
-      {
-        "value": this.max_d,
-        "label": "Max Km"
-      },];
+    const dataLegend = [{ "value": this.min_d, "label": "Min Km" }, { "value": this.max_d, "label": "Max Km" }];
 
+    // add legend group
     const legendGroup = this.svg.append("g")
       .attr("class", "legend")
       .attr("transform", "translate(" + x_legend + "  , 0)");
@@ -151,6 +165,7 @@ export class ScatterComponent implements OnInit {
       .text("DIAMETER")
 
 
+    // cerchi MAX e MIN
     const legend_items = legendGroup.selectAll("circle")
       .data(dataLegend);
 
@@ -167,40 +182,140 @@ export class ScatterComponent implements OnInit {
       .enter()
       .append("circle")
       .attr("class", "legend-dot")
-      .attr("class", "dot")
+      .attr("class", "dot")      // TODO questo serve o è un typo?
       .style("fill", "url(#dot-gradient)")
       .attr("r", d => this.d(d.value))
-      .attr("cy", this.max_d_fixed + 2) // max_d_fixed cosi il più grande è sempre dentro
-      .attr("cx", (d, i) => i * 130 +50 );
+      .attr("cy", this.max_d_fixed + 2) // max_d_fixed cosi il più grande è sempre dentro svg
+      .attr("cx", (d, i) => i * 130 + 50);//3
 
 
     const legendCenters = legendGroup.selectAll(".legend-dot")
       .data(dataLegend)
       .enter();
 
-     legendCenters.append("circle")
+    // CENTRO cerchi max e min
+    legendCenters.append("circle")
       .attr("class", "center-legend")
       .style("fill", "#2AF598")
       .attr("r", 1)
-      .attr("cy", this.max_d_fixed +2 )
-      .attr("cx", (d, i) => i * 130 +50 );
-     
-      legendCenters.append("text")
-        .attr("x", (d, i) => i * 130 + 55)
-        .attr("y", this.max_d_fixed + 2)
-        .attr("text-anchor", "start")
-        .attr("class","text")
-        .text( d=> d.label)
+      .attr("cy", this.max_d_fixed + 2)
+      .attr("cx", (d, i) => i * 130 + 50);//2
 
-    ////////////////////////////////////////////
-
-
-
-
-    this.defineDotGradient();
-
+    legendCenters.append("text")
+      .attr("x", (d, i) => i * 130 + 55) //1
+      .attr("y", this.max_d_fixed + 2)
+      .attr("text-anchor", "start")
+      .attr("class", "text")
+      .text(d => d.label)
 
   }
+
+
+  private addBtnGroup() {
+    const day_array =
+      [{ "label": "MO", "value": "" },
+      { "label": "TU", "value": "" },
+      { "label": "WE", "value": "" },
+      { "label": "TH", "value": "" },
+      { "label": "FR", "value": "" },
+      { "label": "SA", "value": "" },
+      { "label": "SU", "value": "" }];
+
+
+    const buttonGroup = this.svg.append("g")
+      .attr("class", "button-group")
+      //.attr("transform", "translate(" + this.btnGroup_offset_x + "," + this.btnGroup_offset_y + ")")
+      .attr("transform", "translate(0," + this.btnGroup_offset_y + ")"); // move down to make space to title
+    //.attr("transform", "translate(0,0)");
+
+    buttonGroup.append("text")
+      .text("Select one day to update the chart")
+      .attr("class", "text");
+
+
+///////////////////////////////////////////////////////////////////////////
+
+    const buttons = buttonGroup.selectAll(".btn-wrap").data(day_array);
+
+    const btn_wrap = buttons.enter()
+      .append("g")
+      .attr("class", "btn-wrap");
+
+    btn_wrap.append("circle")
+      .attr("class", "day-btn")
+      .attr("r", this.btn_r)
+      .attr("cy", 30)
+      .attr("cx", (d,i) => this.calc_btn_x(d,i))
+     // .attr("cx", (d, i) => i * 52 + this.btn_r * 1.1);// make space for museover effect
+
+
+
+    btn_wrap
+      .append("text")
+      .attr("x", (d,i) => this.calc_btn_x(d,i))
+      .attr("y", 30)
+      .attr('alignment-baseline', 'middle')
+      .style('font-size', this.btn_r * 0.6 + 'px')
+      .attr("text-anchor", "middle")
+      .attr("class", "text day-lbl")
+      .text(d => d.label);
+
+
+
+    // buttons action --> called on group (text + circle)
+    buttonGroup.selectAll(".btn-wrap")
+      .on("mouseover", this.onDayMouseover.bind(this))
+      .on("mouseout", this.onDayMouseout.bind(this))
+      .on("click", this.onDayClik.bind(this));
+
+  }
+
+  private calc_btn_x(d,i)
+  {
+      return i * 52 + this.btn_r * 1.1
+  }
+
+
+
+  private onDayMouseover(ev) {
+
+    // console.log(ev.currentTarget);
+    const t = d3.transition().duration(this.btn_transition_timing);
+    d3.select(ev.currentTarget).select(".day-btn")
+      .transition(t)
+      .attr("r", this.btn_r * 1.1)
+
+  }
+
+  private onDayMouseout(ev) {
+
+    // console.log(ev.currentTarget);
+    const t = d3.transition().duration(this.btn_transition_timing);
+    d3.select(ev.currentTarget).select(".day-btn")
+      .transition(t)
+      .attr("r", this.btn_r)
+  }
+
+  private onDayClik(ev) {
+    console.log(ev.currentTarget);
+   
+    d3.selectAll(".day-lbl__selected")
+    .attr("class", "day-lbl text")
+
+    d3.selectAll(".day-btn__selected")
+    .attr("class", "day-btn")
+
+    d3.select(ev.currentTarget)
+    .select(".day-btn")
+    .attr("class", "day-btn__selected")
+
+
+    
+    d3.select(ev.currentTarget)
+    .select(".day-lbl")
+    .attr("class", " day-lbl__selected")
+  }
+
 
   private setScale() {
 
@@ -222,11 +337,10 @@ export class ScatterComponent implements OnInit {
 
     this.d = d3.scaleSqrt()
       .domain([0, this.max_d])
-      .range([1, this.max_d_fixed]); // max_d_fixed reference point for legend
+      .range([1, this.max_d_fixed]); // max_d_fixed is reference point for legend
 
 
   }
-
 
   private defineDotGradient() {
 
