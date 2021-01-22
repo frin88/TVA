@@ -2,10 +2,7 @@
 
 .dot{
   fill:none;
-  stroke:$light-green;
-  filter: drop-shadow(0 0 8px 0 rgba(42,245,152,0.6));//TODO non funge neanche così da indagare
-   //box-shadow: 0 0 8px 0 rgba(42,245,152,0.6); 
-
+ stroke:$light-green;
 }
 
 .day-btn{
@@ -34,16 +31,15 @@ line{stroke-width:1;}
   padding:1em;
   background: linear-gradient(180deg, #0A1D19 0%, #184159 86.84%, #19435D 100%);
   
-  
   p {
     margin: 0.5em;
   }
 
 }
 
-.tooltip.hidden{
-  display: none;
-}
+// .tooltip.hidden{
+//   display: none;
+// }
 
 
 // .oval-copy-12 {

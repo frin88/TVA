@@ -132,7 +132,8 @@ export class ScatterComponent implements OnInit {
     // set viewbox = viewport => zoom = 0, resizable
     this.svg.attr('viewBox', '0 0 ' + this.viewport_width + ' ' + this.viewport_height);
     this.svg.attr("preserveAspectRatio", "xMinYMid");
-    //console.log("svg width ", inner_width, " svg height", inner_height);
+    console.log("svg width ", this.viewport_width, " svg height", this.viewport_height);
+    // console.log("svg width ", this.inner_width, " svg height", this.inner_height);
   }
 
 
@@ -158,9 +159,9 @@ export class ScatterComponent implements OnInit {
     // html tooltip vs g tooltip
     // https://stackoverflow.com/questions/43613196/using-div-tooltips-versus-using-g-tooltips-in-d3/43619702
 
-    // i chose html for simplicity now
+    // i choose html for simplicity now
     this.tip = d3.select(this.hostElement).append("div")
-      .attr("class", "tooltip hidden text")
+      .attr("class", "tooltip  text")
       .style("position", "absolute")
       .style("opacity", 0)
 
@@ -229,8 +230,7 @@ export class ScatterComponent implements OnInit {
       .enter()
       .append("circle")
       .attr("class", "legend-dot")
-      .attr("class", "dot")      // TODO questo serve o è un typo?
-      .style("fill", "url(#dot-gradient)")
+      .attr("class", "dot")      
       .attr("r", d => this.d(d.value))
       .attr("cy", this.max_d_fixed + 2) // max_d_fixed cosi il più grande è sempre dentro svg
       .attr("cx", (d, i) => i * 130 + 50);//3
@@ -300,7 +300,6 @@ export class ScatterComponent implements OnInit {
       .style('font-size', this.btn_r * 0.6 + 'px')
       .attr('alignment-baseline', 'middle')
       .attr("text-anchor", "middle")
-      //.attr("class", "text day-lbl")
       .text(d => d.label);
 
 
@@ -402,27 +401,43 @@ export class ScatterComponent implements OnInit {
 
     const defs = this.svg.append("defs");
 
-    //Create  gradient
-    defs.append("radialGradient")
-      .attr("id", "dot-gradient")
-      .attr("cx", "50%")	//not really needed, since 50% is the default
-      .attr("cy", "50%")
-      .attr("r", "50%")
-      .selectAll("stop")
-      .data([
-        { offset: "0%", color: "rgba(42,245,152,0)" },
-        { offset: "50%", color: "rgba(42,245,152,0.03)" },
-        { offset: "100%", color: "rgba(42,245,152,0.06)" },
-      ])
-      .enter().append("stop")
-      .attr("offset", function (d) { return d.offset; })
-      .attr("stop-color", function (d) { return d.color; });
+    // //Create  gradient
+    // defs.append("radialGradient")
+    //   .attr("id", "dot-gradient")
+    //   .attr("cx", "50%")	//not really needed, since 50% is the default
+    //   .attr("cy", "50%")
+    //   .attr("r", "50%")
+    //   .selectAll("stop")
+    //   .data([
+    //     { offset: "0%", color: "rgba(42,245,152,0)" },
+    //     { offset: "50%", color: "rgba(42,245,152,0.03)" },
+    //     { offset: "100%", color: "rgba(42,245,152,0.06)" },
+    //   ])
+    //   .enter().append("stop")
+    //   .attr("offset", (d) => d.offset)
+    //   .attr("stop-color", (d) => d.color);
+
+   
+    // //Filter for the outside glow
+    var filter = defs.append("filter")
+      .attr("id", "glow");
+    filter.append("feGaussianBlur")
+      .attr("stdDeviation", "1.8")
+      .attr("result", "coloredBlur");
+    var feMerge = filter.append("feMerge");
+    feMerge.append("feMergeNode")
+      .attr("in", "coloredBlur");
+    feMerge.append("feMergeNode")
+      .attr("in", "SourceGraphic");
+
+
+
+
   }
 
   private showTooltip(yoffset, ev) {
 
-
-    console.log("show tooltip" ,ev.currentTarget);
+    console.log("show tooltip", ev.currentTarget);
     const t = d3.transition().duration(500);
     const d = d3.select(ev.currentTarget).data()[0];
     var f = d3.format(".2f");
@@ -436,24 +451,26 @@ export class ScatterComponent implements OnInit {
 
     d3.select(".tooltip")
       .html(html)
-      .classed("hidden", false)
+     // .classed("hidden", false)
       .style("left", d3.pointer(ev)[0] + "px")
       .style("top", d3.pointer(ev)[1] + yoffset + "px")  //+ l'offset del chart
-      .transition(t)  
+      .transition(t)
       .style("opacity", .9)
 
 
   }
 
   private hideTooltip(ev) {
-    console.log("hide tooltip",(ev.currentTarget));
+     console.log("hide tooltip", (ev.currentTarget));
     d3.select(".tooltip")
-      .classed("hidden", true);
+     .style("opacity", 0)
+     
   }
 
   private addDots() {
 
-    const t = d3.transition().duration(750);
+    const t_enter = d3.transition().duration(750);
+    const t_exit = d3.transition().duration(500);
     const _that = this;
 
     //join
@@ -465,24 +482,25 @@ export class ScatterComponent implements OnInit {
           let enter = group.append("g").attr("class", "dot-wrap");
           enter.append("circle")
             .attr("class", "dot")
-            .style("fill", "url(#dot-gradient)")
+            //.style("fill", "url(#dot-gradient)")
+            .style("filter", "url(#glow)")
             .attr("cy", d => _that.y(d.distance_au))
             .attr("cx", d => _that.x(d.velocity_ks))
-            .transition(t)
+            .transition(t_enter)
             .attr("r", d => _that.d(d.diameter))
-            
+
 
           enter.append("circle")
             .attr("class", "center")
             .style("fill", "#2AF598")
             .attr("cy", d => _that.y(d.distance_au))
             .attr("cx", d => _that.x(d.velocity_ks))
-            .transition(t)
-            .attr("r", 1);
+            .transition(t_enter)
+            .attr("r", 0.5)
 
           enter
-            .on("mouseover", _that.showTooltip.bind(this, _that.chartOffset))
-            .on("mouseout", _that.hideTooltip.bind(this));
+            .on("mouseenter", _that.showTooltip.bind(this, _that.chartOffset))
+            .on("mouseleave", _that.hideTooltip.bind(this));
 
           return enter;
         },
@@ -492,14 +510,15 @@ export class ScatterComponent implements OnInit {
         function (group) {
           //EXIT
           group.select(".dot")
-            .transition(t)
+            .transition(t_exit)
+            .attr("r", 0)
+            .remove();
+
+          group.selectAll(".center")
+            .transition(t_exit)
             .attr("r", 0).remove();
 
-          group.select(".center")
-            .transition(t)
-            .attr("r", 0).remove();
-
-          group.remove();
+          group.transition(t_exit).remove();
           return group;
 
         }
