@@ -8,6 +8,8 @@ import { PieComponent } from './charts/pie/pie.component';
 import { ScatterComponent } from './charts/scatter/scatter.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
+import { Top5Component } from './charts/top5/top5.component';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 
 
@@ -17,7 +19,8 @@ import { HttpClientModule } from '@angular/common/http';
     BarComponent,
     DashboardComponent,
     PieComponent,
-    ScatterComponent
+    ScatterComponent,
+    Top5Component
     
   ],
   imports: [
@@ -25,7 +28,8 @@ import { HttpClientModule } from '@angular/common/http';
     AppRoutingModule,
     ReactiveFormsModule,
     FormsModule,
-    HttpClientModule
+    HttpClientModule,
+    NgbModule
 
   ],
   providers: [],

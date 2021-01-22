@@ -1,9 +1,135 @@
+
 @import "~src/styles";
-.dashboard{
-    display:flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    height: 100vh;
-    border:3px solid deeppink;
-    padding:50px;
+
+
+
+
+:host {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
 }
+
+.container {
+    min-width: 350px;
+    width: 99vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    background-color: transparent;
+    padding: 2%;
+    // @include media-breakpoint-down(md) {
+    //     flex-direction: column;
+    // }
+
+   
+    #dayAsteroids {
+        height: 90vh;
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        position: relative;
+        flex:3;
+        border-right: 0.25px solid $white;
+        
+        div:first-of-type {
+        align-self: flex-start;
+            h1{margin-bottom: 10px; }
+            .btn-container{
+                display: flex;
+                flex-direction: row;
+                justify-content: space-around;
+                padding: 10px;
+            }
+
+        }
+       
+
+      
+
+        #chartAndDataContainer {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: transparent;
+            height: 100%;
+            width: 100%;
+            #chartContainer {
+                position: relative; // for tooltip
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex: 1;
+                height: 100%;
+                width: 100%;
+                app-scatter {
+                    display: flex;
+                   // justify-content: center;
+                   // align-items: center;
+                    height: 100%;
+                    width: 100%;
+                }
+            }
+ 
+        }
+
+   
+    }
+
+
+    #weekMagnitudo {
+        height: 90vh;
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        position: relative;
+        flex:1;
+       
+        h1{
+            align-self: "middle";
+        }
+        
+
+        #chartAndDataContainer_ {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: transparent;
+            height: 100%;
+            width: 100%;
+            #chartContainer_ {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex: 1;
+                height: 100%;
+                width: 100%;
+                app-scatter {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    height: 100%;
+                    width: 100%;
+                }
+            }
+ 
+        }
+    }
+
+// @include media-breakpoint-down(md) {
+//     #dayAsteroids{ 
+//         border:1px solid deepskyblue;  
+//     }
+// }
+}
+
+

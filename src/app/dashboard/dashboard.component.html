@@ -1,6 +1,22 @@
-<div class="dashboard">
-  <h1> Asteroids of the day</h1>
-  <!-- qui ci saranno i filtri sul giorno, ancora da capire se in un loro componente o liberi -->
+<div class="container">
+   
+    <div id="dayAsteroids" #dayAsteroids>
+        <div>
+            <h1>Asteroids of the day</h1>          
+        </div>    
+        <div id="chartAndDataContainer">
+            <div id="chartContainer">
+                <app-scatter *ngIf="data" #ordersByStatusChart [_data]="data"></app-scatter>
+            </div>
+        </div>
+    </div>
+    <div id="weekMagnitudo" #weekMagnitudo>
+        <h1>Magnitudo of the week</h1>
+        <div id="chartAndDataContainer_">
+            <div id="chartContainer_">
+                magnitudo
+            </div>
+        </div>
+    </div>
 
-  <app-scatter *ngIf="data$ | async" [data]="data"></app-scatter>
 </div>

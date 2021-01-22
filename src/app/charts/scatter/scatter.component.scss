@@ -1,0 +1,53 @@
+@import "~src/styles";
+
+.dot{
+  fill:none;
+ stroke:$light-green;
+}
+
+.day-btn{
+  fill:transparent;
+  stroke: $white;
+  font-weight: normal;
+
+  &__selected{
+    fill:$light-green
+  }
+}
+
+.day-lbl{
+ 
+  &__selected{
+    fill:$black
+  }
+}
+
+line{stroke-width:1;}
+
+.tooltip{
+  box-shadow: 0 0 20px 0 rgba(255,255,255,0.1), 0 2px 4px 0 rgba(0,0,0,0.5);
+  min-width: 180px;
+  border:1px solid $white;
+  padding:1em;
+  background: linear-gradient(180deg, #0A1D19 0%, #184159 86.84%, #19435D 100%);
+  
+  p {
+    margin: 0.5em;
+  }
+
+}
+
+// .tooltip.hidden{
+//   display: none;
+// }
+
+
+// .oval-copy-12 {
+//   box-sizing: border-box;
+//   height: 89px;
+//   width: 89px;
+//   border: 1px solid #2AF598;
+//   background: 
+//radial-gradient(circle, rgba(42,245,152,0) 0%, rgba(42,245,152,0.03) 48.36%, rgba(42,245,152,0.06) 100%);
+//   box-shadow: 0 0 8px 0 rgba(42,245,152,0.6);
+// }
