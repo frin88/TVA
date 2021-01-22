@@ -86,6 +86,8 @@ export class ScatterComponent implements OnInit {
 
   }
 
+ 
+
   private fillDaysStruct() {
 
     const formatDay = d3.timeFormat("%a");
@@ -93,7 +95,7 @@ export class ScatterComponent implements OnInit {
     for (let key in this.data_week) {
 
       let d = new Date(key);
-      let i = parseInt(order(d)) - 1; // keep the right order mo -> su
+      let i = parseInt(order(d)) - 1; // keep the right order mon -> sun
       this.day_array[i] = { "label": formatDay(d), "value": key };
 
     }
@@ -257,28 +259,29 @@ export class ScatterComponent implements OnInit {
 
     const buttons = buttonGroup.selectAll(".btn-wrap").data(this.day_array);
 
+
     const btn_wrap = buttons.enter()
       .append("g")
       .attr("class", "btn-wrap");
-
+    
     btn_wrap
       .append("circle")
-      .attr("class", "day-btn")
+      .attr("class",  (d) => d.value !== this.selectedDay ? "day-btn" :"day-btn__selected")
       .attr("r", this.btn_r)
       .attr("cy", 30)
-      .attr("cx", (d, i) => this.calc_btn_x(d, i))
-    // .attr("cx", (d, i) => i * 52 + this.btn_r * 1.1);// make space for museover effect
-
-
+      .attr("cx", (d, i) => this.calc_btn_x(d, i));
+  
+      //day-lbl
 
     btn_wrap
       .append("text")
       .attr("x", (d, i) => this.calc_btn_x(d, i))
       .attr("y", 30)
-      .attr('alignment-baseline', 'middle')
+      .attr("class",  (d) => d.value !== this.selectedDay ? "text day-lbl" :"text day-lbl__selected")
       .style('font-size', this.btn_r * 0.6 + 'px')
-      .attr("text-anchor", "middle")
-      .attr("class", "text day-lbl")
+      .attr('alignment-baseline', 'middle')
+      .attr("text-anchor","middle")
+      //.attr("class", "text day-lbl")
       .text(d => d.label);
 
 
@@ -292,7 +295,7 @@ export class ScatterComponent implements OnInit {
   }
 
   private calc_btn_x(d, i) {
-    return i * 52 + this.btn_r * 1.1
+    return i * 60 + this.btn_r * 1.1
   }
 
 
@@ -442,7 +445,6 @@ export class ScatterComponent implements OnInit {
             .transition(t)
             .attr("r", 0).remove();
 
-
           group.remove();
           return group;
 
@@ -450,54 +452,7 @@ export class ScatterComponent implements OnInit {
       );
 
 
-    // bind data to group wrap
-    // const circles = this.g.selectAll("g.dot-wrap").data( d => [this.data])
-    //EXIT old elements
 
-    // circles.exit()
-    //   .transition(t)
-    //   .attr("r", 0)
-    //   .attr("fill", "green")
-    //   .remove();
-
-
-    // const circles_wrap = circles.enter()
-    //   .append("g")
-    //   .attr("class", "dot-wrap");
-
-    //.data(this.data, d => d.name); //trak by name TODO-- not sure if i have the same neo in diff days 
-    //const circels_wrap =  circles.enter().append("g").attr("class","dot-wrap"); // appendo un gruppo per circle + center
-
-
-
-    // //ENTER create new
-    // circles_wrap
-    //   .append("circle")
-    //   .attr("class", "dot")
-    //   .style("fill", "url(#dot-gradient)")
-    //   .attr("r", d => this.d(d.diameter))
-    //   .attr("cy", d => this.y(d.distance_au))
-    //   .attr("cx", d => this.x(d.velocity_ks))
-
-    //   .merge(circles_wrap)
-    //   .transition(t)
-    //   .attr("r", d => this.d(d.diameter))
-    //   .attr("cy", d => this.y(d.distance_au))
-    //   .attr("cx", d => this.x(d.velocity_ks))
-
-    //////////////////////////////////////////////////////////////
-
-
-    // const centers = this.g.selectAll(".center")
-    //   .data(this.data, d => d.name)
-    //   .enter()
-    // circles_wrap
-    //   .append("circle")
-    //   .attr("class", "center")
-    //   .style("fill", "#2AF598")
-    //   .attr("r", 1)
-    //   .attr("cy", d => this.y(d.distance_au))
-    //   .attr("cx", d => this.x(d.velocity_ks));
   }
 
   private getToday() {
