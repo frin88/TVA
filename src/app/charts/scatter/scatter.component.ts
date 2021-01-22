@@ -1,6 +1,7 @@
 import { Component, Input, OnInit, ElementRef, ViewEncapsulation, SimpleChanges, OnChanges } from '@angular/core';
 import { Chart } from '../../models/Chart';
 import * as d3 from "d3";
+import { exit } from 'process';
 
 @Component({
   selector: 'app-scatter',
@@ -13,7 +14,8 @@ export class ScatterComponent implements OnInit {
 
   //X VELOCITA
   //Y DISTANZA
-  @Input() data: any;
+  @Input() _data: any;
+
 
   ///////////////////////
 
@@ -34,7 +36,7 @@ export class ScatterComponent implements OnInit {
   private margin_top = 5;
   //////////////////////////
 
-  private btnGroup_height = 130; // to do da rinominare è la y del chart 
+  private chartOffset = 150; // to do da rinominare è la y del chart 
   private btnGroup_offset_y = 30;
   private btn_r = 20;
   private btnGroup_offset_x = -this.margin_side + this.btn_r;
@@ -55,9 +57,14 @@ export class ScatterComponent implements OnInit {
   private t;
   private btn_transition_timing = 200;
 
+  ////
+
+  private selectedDay;
+  private data_week; // data for all week
+  private data; // data for single day
 
 
-  private selectedDay = '2021-01-16';
+  private day_array = [];
 
   constructor(private elRef: ElementRef) {
     this.hostElement = this.elRef.nativeElement;
@@ -65,10 +72,31 @@ export class ScatterComponent implements OnInit {
 
   ngOnInit(): void {
 
+    this.data_week = this._data;
 
-    this.data = this.data[this.selectedDay];
-    console.log('scatter alive', this.data);
+    this.selectedDay = this.getToday();
+    this.data = this.data_week[this.selectedDay];
+    //console.log('scatter alive', this.data);
+
+    this.fillDaysStruct();
+    // console.log("day_array", this.day_array);
+
+
     this.updateChart(this.data);
+
+  }
+
+  private fillDaysStruct() {
+
+    const formatDay = d3.timeFormat("%a");
+    const order = d3.timeFormat("%u");
+    for (let key in this.data_week) {
+
+      let d = new Date(key);
+      let i = parseInt(order(d)) - 1; // keep the right order mo -> su
+      this.day_array[i] = { "label": formatDay(d), "value": key };
+
+    }
 
   }
 
@@ -76,6 +104,10 @@ export class ScatterComponent implements OnInit {
     if (!this.svg) {
       this.createChart(data);
       return;
+    }
+    else {
+      this.setScale();
+      this.addDots();
     }
   }
 
@@ -99,7 +131,7 @@ export class ScatterComponent implements OnInit {
     this.viewport_height = parseInt(this.svg.style("height"));
 
     this.inner_width = parseInt(this.svg.style("width")) - (this.margin_side * 2);
-    this.inner_height = parseInt(this.svg.style("height")) - (this.margin_top * 2) - this.btnGroup_height - this.btnGroup_offset_y;
+    this.inner_height = parseInt(this.svg.style("height")) - (this.margin_top * 2) - this.chartOffset - this.btnGroup_offset_y;
 
     // set viewbox = viewport => zoom = 0, resizable
     this.svg.attr('viewBox', '0 0 ' + this.viewport_width + ' ' + this.viewport_height);
@@ -113,13 +145,8 @@ export class ScatterComponent implements OnInit {
 
     // main group
     this.g = this.svg.append("g")
-      .attr("transform", "translate(0," + this.btnGroup_height + ")"); // move down to make space to buttons
-
-
-
-
-    /////////////////////
-
+      .attr("transform", "translate(0," + this.chartOffset + ")") // move down to make space to buttons
+      .attr("class", "main")
     this.addBtnGroup();
     this.defineDotGradient();
     this.addGridLines();
@@ -212,14 +239,7 @@ export class ScatterComponent implements OnInit {
 
 
   private addBtnGroup() {
-    const day_array =
-      [{ "label": "MO", "value": "" },
-      { "label": "TU", "value": "" },
-      { "label": "WE", "value": "" },
-      { "label": "TH", "value": "" },
-      { "label": "FR", "value": "" },
-      { "label": "SA", "value": "" },
-      { "label": "SU", "value": "" }];
+
 
 
     const buttonGroup = this.svg.append("g")
@@ -233,26 +253,27 @@ export class ScatterComponent implements OnInit {
       .attr("class", "text");
 
 
-///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
 
-    const buttons = buttonGroup.selectAll(".btn-wrap").data(day_array);
+    const buttons = buttonGroup.selectAll(".btn-wrap").data(this.day_array);
 
     const btn_wrap = buttons.enter()
       .append("g")
       .attr("class", "btn-wrap");
 
-    btn_wrap.append("circle")
+    btn_wrap
+      .append("circle")
       .attr("class", "day-btn")
       .attr("r", this.btn_r)
       .attr("cy", 30)
-      .attr("cx", (d,i) => this.calc_btn_x(d,i))
-     // .attr("cx", (d, i) => i * 52 + this.btn_r * 1.1);// make space for museover effect
+      .attr("cx", (d, i) => this.calc_btn_x(d, i))
+    // .attr("cx", (d, i) => i * 52 + this.btn_r * 1.1);// make space for museover effect
 
 
 
     btn_wrap
       .append("text")
-      .attr("x", (d,i) => this.calc_btn_x(d,i))
+      .attr("x", (d, i) => this.calc_btn_x(d, i))
       .attr("y", 30)
       .attr('alignment-baseline', 'middle')
       .style('font-size', this.btn_r * 0.6 + 'px')
@@ -270,9 +291,8 @@ export class ScatterComponent implements OnInit {
 
   }
 
-  private calc_btn_x(d,i)
-  {
-      return i * 52 + this.btn_r * 1.1
+  private calc_btn_x(d, i) {
+    return i * 52 + this.btn_r * 1.1
   }
 
 
@@ -298,22 +318,37 @@ export class ScatterComponent implements OnInit {
 
   private onDayClik(ev) {
     console.log(ev.currentTarget);
-   
+
+    //reset prev selection
     d3.selectAll(".day-lbl__selected")
-    .attr("class", "day-lbl text")
+      .attr("class", "day-lbl text")
 
     d3.selectAll(".day-btn__selected")
-    .attr("class", "day-btn")
+      .attr("class", "day-btn")
 
-    d3.select(ev.currentTarget)
-    .select(".day-btn")
-    .attr("class", "day-btn__selected")
+    // add current selection
+    const target_el = d3.select(ev.currentTarget)
+    target_el
+      .select(".day-btn")
+      .attr("class", "day-btn__selected")
+
+    target_el
+      .select(".day-lbl")
+      .attr("class", " day-lbl__selected")
+
+    // updat selected day
+    var new_sel = target_el.data();
 
 
-    
-    d3.select(ev.currentTarget)
-    .select(".day-lbl")
-    .attr("class", " day-lbl__selected")
+    if (new_sel[0]["value"] !== this.selectedDay) {
+      // ho cambiato giorno
+      this.selectedDay = new_sel[0]["value"];
+      this.data = this.data_week[this.selectedDay];
+      this.updateChart(this.data);
+    }
+
+
+
   }
 
 
@@ -363,44 +398,116 @@ export class ScatterComponent implements OnInit {
       .attr("stop-color", function (d) { return d.color; });
   }
 
+
   private addDots() {
 
-    this.t = d3.transition().duration(750);
+    const t = d3.transition().duration(750);
+    const _that = this;
+
+    //join
+    const dot_wrap = this.g
+      .selectAll('.dot-wrap')
+      .data(_that.data, d => d.name)
+      .join(
+        function (group) {
+          let enter = group.append("g").attr("class", "dot-wrap");
+          enter.append("circle")
+            .attr("class", "dot")
+            .style("fill", "url(#dot-gradient)")
+            .attr("cy", d => _that.y(d.distance_au))
+            .attr("cx", d => _that.x(d.velocity_ks))
+            .transition(t)
+            .attr("r", d => _that.d(d.diameter))
+
+          enter.append("circle")
+            .attr("class", "center")
+            .style("fill", "#2AF598")
+            .attr("cy", d => _that.y(d.distance_au))
+            .attr("cx", d => _that.x(d.velocity_ks))
+            .transition(t)
+            .attr("r", 1);
+
+          return enter;
+        },
+        function (group) {
+          //UPDATE
+        },
+        function (group) {
+          //EXIT
+          group.select(".dot")
+            .transition(t)
+            .attr("r", 0).remove();
+
+            group.select(".center")
+            .transition(t)
+            .attr("r", 0).remove();
 
 
-    const circles = this.g.selectAll("circle")
-      .data(this.data, d => d.name); //trak by name
+          group.remove();
+          return group;
 
+        }
+      );
+
+
+    // bind data to group wrap
+    // const circles = this.g.selectAll("g.dot-wrap").data( d => [this.data])
     //EXIT old elements
-    circles.exit()
-      .attr("fill", "green")
-      .transition(this.t)
-      .attr("r", 0)
-      .remove();
+
+    // circles.exit()
+    //   .transition(t)
+    //   .attr("r", 0)
+    //   .attr("fill", "green")
+    //   .remove();
 
 
-    //ENTER create new
-    circles
-      .enter()
-      .append("circle")
-      .attr("class", "dot")
-      .style("fill", "url(#dot-gradient)")
-      .attr("r", d => this.d(d.diameter))
-      .attr("cy", d => this.y(d.distance_au))
-      .attr("cx", d => this.x(d.velocity_ks))
+    // const circles_wrap = circles.enter()
+    //   .append("g")
+    //   .attr("class", "dot-wrap");
+
+    //.data(this.data, d => d.name); //trak by name TODO-- not sure if i have the same neo in diff days 
+    //const circels_wrap =  circles.enter().append("g").attr("class","dot-wrap"); // appendo un gruppo per circle + center
 
 
-    const centers = this.g.selectAll(".center")
-      .data(this.data, d => d.name)
-      .enter()
-      .append("circle")
-      .attr("class", "center")
-      .style("fill", "#2AF598")
-      .attr("r", 1)
-      .attr("cy", d => this.y(d.distance_au))
-      .attr("cx", d => this.x(d.velocity_ks));
+
+    // //ENTER create new
+    // circles_wrap
+    //   .append("circle")
+    //   .attr("class", "dot")
+    //   .style("fill", "url(#dot-gradient)")
+    //   .attr("r", d => this.d(d.diameter))
+    //   .attr("cy", d => this.y(d.distance_au))
+    //   .attr("cx", d => this.x(d.velocity_ks))
+
+    //   .merge(circles_wrap)
+    //   .transition(t)
+    //   .attr("r", d => this.d(d.diameter))
+    //   .attr("cy", d => this.y(d.distance_au))
+    //   .attr("cx", d => this.x(d.velocity_ks))
+
+    //////////////////////////////////////////////////////////////
+
+
+    // const centers = this.g.selectAll(".center")
+    //   .data(this.data, d => d.name)
+    //   .enter()
+    // circles_wrap
+    //   .append("circle")
+    //   .attr("class", "center")
+    //   .style("fill", "#2AF598")
+    //   .attr("r", 1)
+    //   .attr("cy", d => this.y(d.distance_au))
+    //   .attr("cx", d => this.x(d.velocity_ks));
   }
 
+  private getToday() {
+
+    const data = new Date();
+    const day = ("0" + data.getDate()).slice(-2);
+    const month = ("0" + (data.getMonth() + 1)).slice(-2);
+    const year = data.getFullYear();
+    return year + '-' + month + '-' + day;
+  }
 
 
 
