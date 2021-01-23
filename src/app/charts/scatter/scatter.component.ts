@@ -438,7 +438,7 @@ export class ScatterComponent implements OnInit {
   private showTooltip(yoffset, ev) {
 
     console.log("show tooltip", ev.currentTarget);
-    const t = d3.transition().duration(500);
+    const t = d3.transition().duration(100);
     const d = d3.select(ev.currentTarget).data()[0];
     var f = d3.format(".2f");
 
@@ -479,6 +479,8 @@ export class ScatterComponent implements OnInit {
       .data(_that.data, d => d.name)
       .join(
         function (group) {
+
+          //ENTER
           let enter = group.append("g").attr("class", "dot-wrap");
           enter.append("circle")
             .attr("class", "dot")
@@ -506,6 +508,7 @@ export class ScatterComponent implements OnInit {
         },
         function (group) {
           //UPDATE
+          // TODO check if same neo can be in different days
         },
         function (group) {
           //EXIT
