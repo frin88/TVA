@@ -1,22 +1,23 @@
 <div class="container">
-   
     <div id="dayAsteroids" #dayAsteroids>
-        <div>
-            <h1>Asteroids of the day</h1>          
-        </div>    
-        <div id="chartAndDataContainer">
-            <div id="chartContainer">
-                <app-scatter *ngIf="data" #ordersByStatusChart [_data]="data"></app-scatter>
-            </div>
-        </div>
+       <div>
+          <h1>Asteroids of the day</h1>
+       </div>
+       <div id="chartAndDataContainer">
+          <div id="chartContainer">
+             <app-scatter *ngIf="data" #ordersByStatusChart [_data]="data"></app-scatter>
+          </div>
+       </div>
     </div>
     <div id="weekMagnitudo" #weekMagnitudo>
-        <h1>Magnitudo of the week</h1>
-        <div id="chartAndDataContainer_">
-            <div id="chartContainer_">
-                magnitudo
-            </div>
-        </div>
+       <div>
+          <h1>Brightest of the week</h1>
+       </div>
+       <div id="chartAndDataContainer_">
+          <div id="chartContainer_">
+              <app-top5 *ngIf="data" [_data]="data"></app-top5>
+            
+          </div>
+       </div>
     </div>
-
-</div>
+ </div>

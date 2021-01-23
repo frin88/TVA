@@ -1,6 +1,11 @@
-.top5-container{
-    border: 2px solid green;
-    flex:1;
-    height: 100%;
-    width: 100%;
-}
+
+@import "~src/styles";
+.rect-inner{
+    fill:$white;
+   stroke:none;
+  }
+
+  .rect-fixed{
+    fill:none;
+    stroke: white ;
+  }
