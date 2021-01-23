@@ -10,7 +10,8 @@ export class DashboardComponent implements OnInit {
 
   data: any;
   data_array = new Array();
-  days = new Array();
+  //days = new Array();
+  //plain = new Array();
 
   constructor(private dataService: DataService) {
 
@@ -28,7 +29,7 @@ export class DashboardComponent implements OnInit {
           }
 
         });
-        this.days.push(key);
+       // this.days.push(key);
       }
       this.data = res;
     });

@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, ElementRef, ViewEncapsulation, SimpleChanges, OnChanges } from '@angular/core';
-import { Chart } from '../../models/Chart';
+
 import * as d3 from "d3";
-import { exit } from 'process';
+
 
 @Component({
   selector: 'app-scatter',
@@ -71,12 +71,8 @@ export class ScatterComponent implements OnInit {
 
     this.selectedDay = this.getToday();
     this.data = this.data_week[this.selectedDay];
-    //console.log('scatter alive', this.data);
-
+  
     this.fillDaysStruct();
-    // console.log("day_array", this.day_array);
-
-
     this.updateChart(this.data);
 
   }
@@ -170,8 +166,6 @@ export class ScatterComponent implements OnInit {
     //   .style("opacity", 0)
 
   }
-
-
 
 
   private addGridLines() {
@@ -437,7 +431,7 @@ export class ScatterComponent implements OnInit {
 
   private showTooltip(yoffset, ev) {
 
-    console.log("show tooltip", ev.currentTarget);
+    //console.log("show tooltip", ev.currentTarget);
     const t = d3.transition().duration(100);
     const d = d3.select(ev.currentTarget).data()[0];
     var f = d3.format(".2f");
@@ -461,7 +455,7 @@ export class ScatterComponent implements OnInit {
   }
 
   private hideTooltip(ev) {
-     console.log("hide tooltip", (ev.currentTarget));
+    // console.log("hide tooltip", (ev.currentTarget));
     d3.select(".tooltip")
      .style("opacity", 0)
      
