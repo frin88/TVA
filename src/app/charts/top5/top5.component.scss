@@ -1,11 +1,11 @@
 
 @import "~src/styles";
-.rect{
-    fill:white;
-   stroke:$light-green;
+.rect-inner{
+    fill:$white;
+   stroke:none;
   }
 
   .rect-fixed{
     fill:none;
-    stroke:yellow;
+    stroke: white ;
   }

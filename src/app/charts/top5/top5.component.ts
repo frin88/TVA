@@ -32,8 +32,10 @@ export class Top5Component implements OnInit {
   private offset_x = 100;
 
   //scales
-  private m_max = 50;
+  private m_max = 50; // controls size of fixed outer rects
+  private howmany = 5;// numbers of items to be fitted
   private m;
+
 
   //// in alto quello con magnitudine più bassa
   // A destra viene visualizzata una selezione di 5 asteroidi sul totale della settimana in ordine crescente di magnitudine.
@@ -60,17 +62,18 @@ export class Top5Component implements OnInit {
     let tmpData = [];
     let sortedData;
     for (let key in this._data) {
-
-      // TODO qui sarebe meglio usare reduce
+      // TODO qui sarebe meglio usare reduce...
       this._data[key].forEach(neo => {
         tmpData = [...tmpData, neo];
       });
     }
+    //order by
     sortedData = tmpData.slice().sort((a, b) => d3.ascending(a.magnitude, b.magnitude))
+    this.data = sortedData.slice(0, this.howmany);
+
+    console.log("data top" + this.howmany + " sorted", sortedData.slice(0, this.howmany));
     // console.log("data ", tmpData);
     // console.log("data sorted", sortedData);
-    console.log("data top 5 sorted", sortedData.slice(0, 5));
-    this.data = sortedData.slice(0, 5);
 
 
   }
@@ -82,8 +85,8 @@ export class Top5Component implements OnInit {
       return;
     }
     else {
-      // this.setScale();
-      // this.addDots();
+      this.setScale();
+      this.addRects();
     }
   }
 
@@ -95,6 +98,115 @@ export class Top5Component implements OnInit {
     this.addRects();
 
   }
+
+
+private addNeoInfo()
+{
+
+  const _that = this;
+  const t_enter = d3.transition().duration(750);
+  const t_exit = d3.transition().duration(500);
+
+  //join
+  const rect_wrap = this.g
+    .selectAll('.neo-info')
+    .data(_that.data, d => d.name)
+    .join(
+      function (group) {
+
+        //ENTER
+        let enter = group.append("g")
+          .attr("class", "neo-info");
+
+
+        // enter.append("rect")
+        //   .attr("class", "rect-fixed")
+        //   .style("filter", "url(#glow)")
+        //   .attr("x", () => _that.x_outer()) // x rettangoli fuori fixed
+        //   .attr("y", (d, i) => _that.y_outer(i)) // la y dipende dal loop
+        //   .transition(t_enter)
+        //   .attr("height", d => _that.m_max)
+        //   .attr("width", d => _that.m_max)
+
+
+        // enter.append("rect")
+        //   .attr("class", "rect-inner")
+        //   .attr("x", (d) => (_that.x_inner(d)))  //x rettangoli dentro dipende da outer e data
+        //   .attr("y", (d, i) => _that.y_inner(d, i))// la y dipende dal loop e da data
+        //   .transition(t_enter)
+        //   .attr("height", d => _that.m(d.magnitude))
+        //   .attr("width", d => _that.m(d.magnitude))
+
+        // enter.append("circle")
+        //   .attr("class", "center")
+        //   .style("fill", "#2AF598")
+        //   .attr("cx", d => _that.x_center())
+        //   .attr("cy", (d, i) => _that.y_center(i))
+        //   .transition(t_enter)
+        //   .attr("r", 1);
+
+
+
+        enter = group.append("g")
+          .attr("class", "neo-info");
+
+    let  text =  enter.append("text")
+          .attr("class", "text row")
+          .attr("x", (d) => _that.x_outer() + _that.offset_x)
+          .attr("y", (d, i) => _that.y_outer(i))
+          .attr("text-anchor", "start");
+
+          text
+          .append("tspan")
+          .text((d) => "Name :" + d.name)
+          .attr("x", (d) => _that.x_outer() + _that.offset_x)
+          .attr("y", (d, i) => _that.y_outer(i));
+
+          text
+          .append("tspan")
+          .text((d) => "Diameter :" + d.diameter)
+          .attr("dx", 0)
+          .attr("dy", 100)
+          // .attr("x", (d) => _that.x_outer() + _that.offset_x)
+          // .attr("y", (d, i) => _that.y_outer(i))
+
+
+
+
+          // .text((d) => "Name :" + d.name)
+          // .text((d) => "Diameter :" + d.diameter)
+
+        // enter
+        //   .on("mouseenter", _that.showTooltip.bind(this, _that.chartOffset))
+        //   .on("mouseleave", _that.hideTooltip.bind(this));
+
+        return enter;
+      },
+      function (group) {
+        //UPDATE
+        //nothing to update here
+      },
+      function (group) {
+        //EXIT
+        // group.select(".dot")
+        //   .transition(t_exit)
+        //   .attr("r", 0)
+        //   .remove();
+
+        // group.selectAll(".center")
+        //   .transition(t_exit)
+        //   .attr("r", 0).remove();
+
+        group.transition(t_exit).remove();
+        return group;
+
+      }
+    );
+
+
+
+}
+
 
   private addRects() {
 
@@ -113,18 +225,14 @@ export class Top5Component implements OnInit {
           let enter = group.append("g")
             .attr("class", "rect-wrap")
             .attr("transform", function (d, i) {
-              //let xRot = _that.x_inner(d) + _that.m_max / 2; //set center point for rotation
-              let xRot = _that.x_outer() + _that.m_max / 2; //set center point for rotation
-            
-              let yRot = _that.y_outer(i) + _that.m_max / 2;
+              let xRot = _that.x_center(); //set center point for rotation
+              let yRot = _that.y_center(i);
               return `rotate(-45, ${xRot},  ${yRot} )`
-            })
-
-
-
+            });
 
           enter.append("rect")
             .attr("class", "rect-fixed")
+            .style("filter", "url(#glow)")
             .attr("x", () => _that.x_outer()) // x rettangoli fuori fixed
             .attr("y", (d, i) => _that.y_outer(i)) // la y dipende dal loop
             .transition(t_enter)
@@ -133,23 +241,47 @@ export class Top5Component implements OnInit {
 
 
           enter.append("rect")
-            .attr("class", "rect")
-            .attr("x", (d) => (_that.x_inner(d))) 
-            .attr("y", (d, i) => _that.y_inner(d, i))
+            .attr("class", "rect-inner")
+            .attr("x", (d) => (_that.x_inner(d)))  //x rettangoli dentro dipende da outer e data
+            .attr("y", (d, i) => _that.y_inner(d, i))// la y dipende dal loop e da data
             .transition(t_enter)
             .attr("height", d => _that.m(d.magnitude))
             .attr("width", d => _that.m(d.magnitude))
 
+          enter.append("circle")
+            .attr("class", "center")
+            .style("fill", "#2AF598")
+            .attr("cx", d => _that.x_center())
+            .attr("cy", (d, i) => _that.y_center(i))
+            .transition(t_enter)
+            .attr("r", 1);
 
+          enter = group.append("g")
+            .attr("class", "neo-info");
 
+      let  text =  enter.append("text")
+            .attr("class", "text row")
+            .attr("x", (d) => _that.x_outer() + _that.offset_x)
+            .attr("y", (d, i) => _that.y_outer(i))
+            .attr("text-anchor", "start");
 
-          // enter.append("circle")
-          //   .attr("class", "center")
-          //   .style("fill", "#2AF598")
-          //   .attr("cy", d => _that.y(d.distance_au))
-          //   .attr("cx", d => _that.x(d.velocity_ks))
-          //   .transition(t_enter)
-          //   .attr("r", 0.5)
+            text
+            .append("tspan")
+            .text((d) => "Name :" + d.name)
+            .attr("x", (d) => _that.x_outer() + _that.offset_x)
+            .attr("y", (d, i) => _that.y_outer(i));
+
+            text
+            .append("tspan")
+            .text((d) => "Diameter :" + d.diameter)
+            .attr("x", (d) => _that.x_outer() + _that.offset_x)
+            .attr("dy", 20)
+
+            text
+            .append("tspan")
+            .text((d) => "Magnitude :" + d.magnitude)
+            .attr("x", (d) => _that.x_outer() + _that.offset_x)
+            .attr("dy", 20)
 
           // enter
           //   .on("mouseenter", _that.showTooltip.bind(this, _that.chartOffset))
@@ -159,7 +291,7 @@ export class Top5Component implements OnInit {
         },
         function (group) {
           //UPDATE
-          // TODO check if same neo can be in different days
+          //nothing to update here
         },
         function (group) {
           //EXIT
@@ -184,9 +316,9 @@ export class Top5Component implements OnInit {
     return this.inner_width / 2 - this.offset_x;
 
   }
- 
+
   private y_outer(i) {
-    return this.inner_height / 5 + (i * 110);
+    return this.inner_height / this.howmany + (i * 110);
   }
 
   private x_inner(d) {
@@ -198,7 +330,15 @@ export class Top5Component implements OnInit {
   }
 
 
- 
+  private x_center() {
+    return this.x_outer() + this.m_max / 2;
+  }
+
+  private y_center(i) {
+    return this.y_outer(i) + this.m_max / 2
+  }
+
+
   private setChartDimensions() {
 
     this.svg = d3.select(this.hostElement).append('svg')
@@ -231,8 +371,8 @@ export class Top5Component implements OnInit {
       .range([this.m_max, 1]);
 
 
-    console.log("MAX " + domain_max, this.m(domain_max));
-    console.log("MIN " + domain_min, this.m(domain_min));
+    // console.log("MAX " + domain_max, this.m(domain_max));
+    // console.log("MIN " + domain_min, this.m(domain_min));
 
 
   }
@@ -246,14 +386,29 @@ export class Top5Component implements OnInit {
       //.attr("transform", "translate(0," + this.chartOffset + ")") // move down to make space to buttons
       .attr("class", "main");
 
-    // this.addTooltip();
-    // this.addBtnGroup();
-    // this.defineDotGradient();
+    this.createCustomDef();
     // this.addGridLines();
     // this.addLegend();
 
   }
 
 
+  private createCustomDef() {
+
+    const defs = this.svg.append("defs");
+
+    // //Filter for the outside glow
+    var filter = defs.append("filter")
+      .attr("id", "glow");
+    filter.append("feGaussianBlur")
+      .attr("stdDeviation", "1.8")
+      .attr("result", "coloredBlur");
+    var feMerge = filter.append("feMerge");
+    feMerge.append("feMergeNode")
+      .attr("in", "coloredBlur");
+    feMerge.append("feMergeNode")
+      .attr("in", "SourceGraphic");
+
+  }
 
 }

@@ -143,7 +143,7 @@ export class ScatterComponent implements OnInit {
 
     this.addTooltip();
     this.addBtnGroup();
-    this.defineDotGradient();
+    this.createCustomDef();
     this.addGridLines();
     this.addLegend();
 
@@ -391,7 +391,7 @@ export class ScatterComponent implements OnInit {
 
   }
 
-  private defineDotGradient() {
+  private createCustomDef() {
 
     const defs = this.svg.append("defs");
 
