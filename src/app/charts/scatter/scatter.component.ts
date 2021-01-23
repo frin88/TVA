@@ -48,6 +48,7 @@ export class ScatterComponent implements OnInit {
   private max_d;
   private min_d;
   private max_d_fixed = 50; // this controls max circles sizes
+  private min_d_fixed =1;// this controls min circles sizes
 
   //transitions
   private t;
@@ -155,15 +156,17 @@ export class ScatterComponent implements OnInit {
     // html tooltip vs g tooltip
     // https://stackoverflow.com/questions/43613196/using-div-tooltips-versus-using-g-tooltips-in-d3/43619702
 
-    // i choose html for simplicity now
+   // i choose html for simplicity now
     this.tip = d3.select(this.hostElement).append("div")
       .attr("class", "tooltip  text")
       .style("position", "absolute")
       .style("opacity", 0)
 
-    //   this.tip =this.svg.append("g")
-    //   .attr("class", "tooltip hidden")
-    //   .style("opacity", 0)
+      // TODO indagare se fa glinch perchè è html e non svg o perchè il mio pc non ce l fa..
+
+      // this.tip =this.svg.append("g")
+      // .attr("class", "tooltip hidden")
+      // .style("opacity", 0)
 
   }
 
@@ -178,7 +181,6 @@ export class ScatterComponent implements OnInit {
 
     const yAxis = this.g
       .append("g")
-      // .attr("transform", "translate(0,0)")
       .call(yAxisGenerator);
 
     //hide domain and labels
@@ -238,12 +240,12 @@ export class ScatterComponent implements OnInit {
     legendCenters.append("circle")
       .attr("class", "center-legend")
       .style("fill", "#2AF598")
-      .attr("r", 1)
+      .attr("r", this.min_d_fixed)
       .attr("cy", this.max_d_fixed + 2)
       .attr("cx", (d, i) => i * 130 + 50);//2
 
     legendCenters.append("text")
-      .attr("x", (d, i) => i * 130 + 55) //1
+      .attr("x", (d, i) => i * 130 + 60) //1
       .attr("y", this.max_d_fixed + 2)
       .attr("text-anchor", "start")
       .attr("class", "text")
@@ -386,7 +388,7 @@ export class ScatterComponent implements OnInit {
 
     this.d = d3.scaleSqrt()
       .domain([0, this.max_d])
-      .range([1, this.max_d_fixed]); // max_d_fixed is reference point for legend
+      .range([this.min_d_fixed, this.max_d_fixed]); // max_d_fixed is reference point for legend
 
 
   }
