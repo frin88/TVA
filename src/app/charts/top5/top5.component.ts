@@ -32,19 +32,24 @@ export class Top5Component implements OnInit {
   private chartOffset_y = 40;
   private text_from_rects=70; // distanza tra neo-info e rects
 
+  //leged items
+  private dim = 10; // side of squares in legen
+  private xy_first = [0, 30]; //coord of first sq
+  private dist = 20; // distance between sq
+ 
   //scales
   private m_max = 35; // controls size of fixed outer rects
   private howmany = 5;// numbers of items to be fitted
   private m;
 
-
+  private data = new Array();
   //// in alto quello con magnitudine più bassa
   // A destra viene visualizzata una selezione di 5 asteroidi sul totale della settimana in ordine crescente di magnitudine.
   // La magnitudine è inversamente proporzionale alla luminosità
   // (l'asteroide più luminoso sarà dunque quello con magnitudine più bassa).
   // Il dato (magnitudine) è rappresentato dall'area colorata del rettangolo, rapportata ad una superficie totale fissa.
 
-  private data = new Array();
+ 
 
   constructor(private elRef: ElementRef) {
     this.hostElement = this.elRef.nativeElement;
@@ -79,7 +84,6 @@ export class Top5Component implements OnInit {
 
   }
 
-
   public updateChart(data: number[]) {
     if (!this.svg) {
       this.createChart(data);
@@ -97,6 +101,58 @@ export class Top5Component implements OnInit {
     this.setScale();
     this.addGraphicsElement();
     this.addRects();
+
+  }
+
+  private setScale() {
+
+    const domain_max = parseFloat(d3.max(this.data, d => d["magnitude"]));
+    const domain_min = parseFloat(d3.min(this.data, d => d["magnitude"]));
+
+    // oppure inverScale ?
+
+    this.m = d3.scaleSqrt()
+      .domain([domain_min, domain_max]) // inversamente proporzionale
+      .range([this.m_max, 1]);
+
+
+    // console.log("MAX " + domain_max, this.m(domain_max));
+    // console.log("MIN " + domain_min, this.m(domain_min));
+
+
+  }
+
+  private setChartDimensions() {
+
+    this.svg = d3.select(this.hostElement).append('svg')
+      .attr('width', '100%')
+      .attr('height', '100%');
+
+    this.viewport_width = parseInt(this.svg.style("width"));
+    this.viewport_height = parseInt(this.svg.style("height"));
+
+    this.inner_width = parseInt(this.svg.style("width")) - (this.margin_side * 2);
+    this.inner_height = parseInt(this.svg.style("height")) - (this.margin_top * 2); //- this.chartOffset - this.btnGroup_offset_y;
+
+    // set viewbox = viewport => zoom = 0, resizable
+    this.svg.attr('viewBox', '0 0 ' + this.viewport_width + ' ' + this.viewport_height);
+    this.svg.attr("preserveAspectRatio", "xMinYMid");
+    console.log("svg width ", this.viewport_width, " svg height", this.viewport_height);
+    // console.log("svg width ", this.inner_width, " svg height", this.inner_height);
+  }
+ 
+  private addGraphicsElement() {
+
+
+    // main group
+    this.g = this.svg.append("g")
+      //.attr("transform", "translate(0,0)")
+      .attr("transform", "translate(0," + this.chartOffset_y + ")") // move down to make space to buttons
+      .attr("class", "main");
+
+    this.createCustomDef();
+
+    this.addLegend();
 
   }
 
@@ -143,12 +199,12 @@ export class Top5Component implements OnInit {
 
           enter.append("circle")
             .attr("class", "center")
-            .style("fill", "#2AF598") // todo deve essere nero
             .attr("cx", d => _that.x_center())
             .attr("cy", (d, i) => _that.y_center(i))
             .transition(t_enter)
             .attr("r", 1);
 
+            const f = d3.format(".2f")
 
           //// legend ////
           enter = group.append("g")
@@ -162,19 +218,19 @@ export class Top5Component implements OnInit {
 
           text
             .append("tspan")
-            .text((d) => "Name :" + d.name)
+            .text((d) => "Name: " + d.name)
             .attr("x", (d) => _that.x_outer() + _that.text_from_rects)
             .attr("y", (d, i) => _that.y_outer(i));
 
           text
             .append("tspan")
-            .text((d) => "Diameter :" + d.diameter)
+            .text((d) => "Diameter: " + f(d.diameter))
             .attr("x", (d) => _that.x_outer() + _that.text_from_rects)
             .attr("dy", 20)
 
           text
             .append("tspan")
-            .text((d) => "Magnitude :" + d.magnitude)
+            .text((d) => "Magnitude: " + d.magnitude)
             .attr("x", (d) => _that.x_outer() + _that.text_from_rects)
             .attr("dy", 20)
 
@@ -194,7 +250,7 @@ export class Top5Component implements OnInit {
       );
   }
 
-
+//heleper functions for coord
   private x_outer() {
     return this.inner_width / 2 - this.margin_side;
 
@@ -220,60 +276,8 @@ export class Top5Component implements OnInit {
     return this.y_outer(i) + this.m_max / 2
   }
 
-
-  private setChartDimensions() {
-
-    this.svg = d3.select(this.hostElement).append('svg')
-      .attr('width', '100%')
-      .attr('height', '100%');
-
-    this.viewport_width = parseInt(this.svg.style("width"));
-    this.viewport_height = parseInt(this.svg.style("height"));
-
-    this.inner_width = parseInt(this.svg.style("width")) - (this.margin_side * 2);
-    this.inner_height = parseInt(this.svg.style("height")) - (this.margin_top * 2); //- this.chartOffset - this.btnGroup_offset_y;
-
-    // set viewbox = viewport => zoom = 0, resizable
-    this.svg.attr('viewBox', '0 0 ' + this.viewport_width + ' ' + this.viewport_height);
-    this.svg.attr("preserveAspectRatio", "xMinYMid");
-    console.log("svg width ", this.viewport_width, " svg height", this.viewport_height);
-    // console.log("svg width ", this.inner_width, " svg height", this.inner_height);
-  }
-
-
-  private setScale() {
-
-    const domain_max = parseFloat(d3.max(this.data, d => d["magnitude"]));
-    const domain_min = parseFloat(d3.min(this.data, d => d["magnitude"]));
-
-    // oppure inverScale ?
-
-    this.m = d3.scaleSqrt()
-      .domain([domain_min, domain_max]) // inversamente proporzionale
-      .range([this.m_max, 1]);
-
-
-    // console.log("MAX " + domain_max, this.m(domain_max));
-    // console.log("MIN " + domain_min, this.m(domain_min));
-
-
-  }
-
-  private addGraphicsElement() {
-
-
-    // main group
-    this.g = this.svg.append("g")
-      //.attr("transform", "translate(0,0)")
-      .attr("transform", "translate(0," + this.chartOffset_y + ")") // move down to make space to buttons
-      .attr("class", "main");
-
-    this.createCustomDef();
-
-    this.addLegend();
-
-  }
-
+// 
+ 
   private addLegend() {
 
     // add legend group
@@ -301,10 +305,8 @@ export class Top5Component implements OnInit {
 
     ///////////////////////////////////
 
-    let dim = 10; // lato del quadrato
-    let xy_first = [0, 30];
-    let dist = 20; // distance between sq
 
+    const _that = this;
     //ENTER
     legendGroup.append("g")
       .attr("class", "rect-wrap-legend");
@@ -312,14 +314,14 @@ export class Top5Component implements OnInit {
     legendGroup.append("rect")
       .attr("class", "rect-inner")
       //.attr("fill","white")
-      .attr("x", xy_first[0])
-      .attr("y", xy_first[1])
+      .attr("x", this.xy_first[0])
+      .attr("y", this.xy_first[1])
       // .transition(t_enter)
-      .attr("height", dim)
-      .attr("width", dim)
-      .attr("transform", function (d, i) {
-        let xRot = dim / 2 + xy_first[0] //set center point for rotation
-        let yRot = dim / 2 + xy_first[1]
+      .attr("height", this.dim)
+      .attr("width", this.dim)
+      .attr("transform", function (d, i ) {
+        let xRot =  _that.dim / 2 +  _that.xy_first[0] //set center point for rotation
+        let yRot =  _that.dim / 2 +  _that.xy_first[1]
         return `rotate(-45, ${xRot},  ${yRot} )`
       });
 
@@ -327,23 +329,24 @@ export class Top5Component implements OnInit {
     legendGroup
       .append("text")
       .attr("class","text")
-      .attr("x", xy_first[0] + 20)
-      .attr("y", xy_first[1] + dim/2 )
+      .attr("x",  this.xy_first[0] + 20)
+      .attr("y",  this.xy_first[1] +  this.dim*Math.sqrt(2)/2 ) // center with diagonal
       .attr("text-anchor", "start")
+      .attr('alignment-baseline', 'middle')
       .text("Filled area: magnitude");
 
 
 
     legendGroup.append("rect")
       .attr("class", "rect-fixed")
-      .attr("x", xy_first[0])
-      .attr("y", xy_first[1] + dist)
+      .attr("x", this. xy_first[0])
+      .attr("y", this. xy_first[1] + this. dist)
       // .transition(t_enter)
-      .attr("height", dim)
-      .attr("width", dim)
+      .attr("height",  this.dim)
+      .attr("width",  this.dim)
       .attr("transform", function (d, i) {
-        let xRot = dim / 2 + xy_first[0];  //set center point for rotation
-        let yRot = dim / 2 + xy_first[1] + dist;
+        let xRot =  _that.dim / 2 +  _that.xy_first[0];  //set center point for rotation
+        let yRot =  _that.dim / 2 +  _that.xy_first[1] +  _that.dist;
         return `rotate(-45, ${xRot},  ${yRot} )`
       });
 
@@ -352,15 +355,14 @@ export class Top5Component implements OnInit {
     legendGroup
     .append("text")
     .attr("class","text")
-    .attr("x", xy_first[0] + 20)
-    .attr("y", xy_first[1] + + dist + dim/2 )
+    .attr("x",  this.xy_first[0] + 20)
+    .attr("y",  this.xy_first[1] + +  this.dist +  this.dim*Math.sqrt(2)/2  )
     .attr("text-anchor", "start")
+    .attr('alignment-baseline', 'middle')
     .text("Empty area: brightness");
 
 
   }
-
-
 
   private createCustomDef() {
 

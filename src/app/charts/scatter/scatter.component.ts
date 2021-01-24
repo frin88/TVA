@@ -1,6 +1,7 @@
 import { Component, Input, OnInit, ElementRef, ViewEncapsulation, SimpleChanges, OnChanges } from '@angular/core';
 
 import * as d3 from "d3";
+import { take } from 'rxjs/operators';
 
 
 @Component({
@@ -18,7 +19,7 @@ export class ScatterComponent implements OnInit {
   ///////////////////////
 
   private hostElement; // Native element hosting the SVG container
-  private g; // SVG Group element
+  private g; // SVG main Group element
   private svg;
 
   // size of svg element
@@ -31,13 +32,13 @@ export class ScatterComponent implements OnInit {
 
   //margin => inner = viewport - margin*2
   private margin_side = 30;
-  private margin_top = 5;
+  private margin_top = 10;
   //////////////////////////
 
-  private chartOffset = 150; // to do da rinominare è la y del chart 
+  private chartOffset = 150; // TODO da rinominare è la y iniziale del chart 
   private btnGroup_offset_y = 30;
   private btn_r = 20;
-  private btnGroup_offset_x = -this.margin_side + this.btn_r;
+
 
   // scales
   private x;
@@ -48,7 +49,7 @@ export class ScatterComponent implements OnInit {
   private max_d;
   private min_d;
   private max_d_fixed = 50; // this controls max circles sizes
-  private min_d_fixed =1;// this controls min circles sizes
+  private min_d_fixed = 1;// this controls min circles sizes
 
   //transitions
   private t;
@@ -61,6 +62,7 @@ export class ScatterComponent implements OnInit {
   private day_array = [];
 
   private tip;
+  private yAxis;
 
   constructor(private elRef: ElementRef) {
     this.hostElement = this.elRef.nativeElement;
@@ -72,7 +74,7 @@ export class ScatterComponent implements OnInit {
 
     this.selectedDay = this.getToday();
     this.data = this.data_week[this.selectedDay];
-  
+
     this.fillDaysStruct();
     this.updateChart(this.data);
 
@@ -95,10 +97,12 @@ export class ScatterComponent implements OnInit {
 
   public updateChart(data: number[]) {
     if (!this.svg) {
+      this.addTooltip();
       this.createChart(data);
       return;
     }
     else {
+
       this.setScale();
       this.addDots();
     }
@@ -112,7 +116,6 @@ export class ScatterComponent implements OnInit {
     this.addDots();
 
   }
-
 
   private setChartDimensions() {
 
@@ -133,6 +136,31 @@ export class ScatterComponent implements OnInit {
     // console.log("svg width ", this.inner_width, " svg height", this.inner_height);
   }
 
+  private setScale() {
+
+    const max_x = parseFloat(d3.max(this.data, d => d["velocity_ks"]));
+    const max_y = parseFloat(d3.max(this.data, d => d["distance_au"]));
+
+    this.max_d = parseFloat(d3.max(this.data, d => d["diameter"]));
+    this.min_d = parseFloat(d3.min(this.data, d => d["diameter"]));
+
+    //console.log(min_d, max_d);
+
+    this.x = d3.scaleLinear()
+      .domain([0, max_x])
+      .range([0, this.inner_width]);
+
+    this.y = d3.scaleLinear()
+      .domain([0, max_y])
+      .range([this.inner_height, this.margin_top]);
+
+    this.d = d3.scaleSqrt()
+      .domain([0, this.max_d])
+      .range([this.min_d_fixed, this.max_d_fixed]); // max_d_fixed is reference point for legend
+
+
+  }
+
 
   private addGraphicsElement() {
 
@@ -142,13 +170,106 @@ export class ScatterComponent implements OnInit {
       .attr("transform", "translate(0," + this.chartOffset + ")") // move down to make space to buttons
       .attr("class", "main");
 
-    this.addTooltip();
+
     this.addBtnGroup();
     this.createCustomDef();
     this.addGridLines();
-    this.addLegend();
+    this.addLegend_Diameter();
+    this.addLegend_XY();
 
   }
+
+
+
+  private addDots() {
+
+    const t_enter = d3.transition().duration(750);
+    const t_exit = d3.transition().duration(500);
+    const _that = this;
+
+    //join
+    const dot_wrap = this.g
+      .selectAll('.dot-wrap')
+      .data(_that.data, d => d.name)
+      .join(
+        function (group) {
+
+          //ENTER
+          let enter = group.append("g").attr("class", "dot-wrap");
+          //tootip before transition https://stackoverflow.com/questions/63723411/adding-transition-animation-breaking-tooltip-mouseover
+          //https://stackoverflow.com/questions/24636602/mouseout-mouseleave-gets-fired-when-mouse-moves-inside-the-svg-path-element
+          enter
+            .on('mouseenter', (ev, d) => {
+
+              //console.log("mouseover")
+              var f = d3.format(".2f")
+
+              const html = '<p>Name: ' + d.name + '</p>' +
+                '<p>Diameter: ' + f(d.diameter) + ' km</p>' +
+                '<p>Magnitude: ' + f(d.magnitude) + ' h</p>' +
+                '<p>Distance: ' + f(d.distance_au) + ' au</p>' +
+                '<p>Velocity: ' + f(d.velocity_ks) + ' km/s</p>'
+
+              _that.tip.transition()
+                .duration(400)
+                .style("opacity", .9)
+
+              _that.tip.html(html)
+                .style("left", d3.pointer(ev)[0] + "px")
+                .style("top", d3.pointer(ev)[1] + _that.chartOffset + "px")
+
+            })
+            .on('mouseout', d => {
+
+              _that.tip.style("opacity", 0)
+
+            })
+        
+          enter.append("circle")
+            .attr("class", "dot")
+            .style("filter", "url(#glow)")
+            .attr("cy", d => _that.y(d.distance_au))
+            .attr("cx", d => _that.x(d.velocity_ks))
+            .transition(t_enter)
+            .attr("r", d => _that.d(d.diameter))
+
+
+          enter.append("circle")
+            .attr("class", "center")
+            .style("fill", "#2AF598")
+            .attr("cy", d => _that.y(d.distance_au))
+            .attr("cx", d => _that.x(d.velocity_ks))
+            .transition(t_enter)
+            .attr("r", 0.5)
+
+          return enter;
+        },
+        function (group) {
+          //UPDATE
+          // TODO check if same neo can be in different days
+        },
+        function (group) {
+          //EXIT
+          group.select(".dot")
+            .transition(t_exit)
+            .attr("r", 0)
+            .remove();
+
+          group.selectAll(".center")
+            .transition(t_exit)
+            .attr("r", 0).remove();
+
+          group.transition(t_exit).remove();
+          return group;
+
+        }
+      );
+
+
+
+  }
+
+
 
   private addTooltip() {
 
@@ -156,20 +277,18 @@ export class ScatterComponent implements OnInit {
     // html tooltip vs g tooltip
     // https://stackoverflow.com/questions/43613196/using-div-tooltips-versus-using-g-tooltips-in-d3/43619702
 
-   // i choose html for simplicity now
+    // i choose html for simplicity now
     this.tip = d3.select(this.hostElement).append("div")
       .attr("class", "tooltip  text")
       .style("position", "absolute")
+      .style("z-index", "999")
       .style("opacity", 0)
 
-      // TODO indagare se fa glinch perchè è html e non svg o perchè il mio pc non ce l fa..
-
-      // this.tip =this.svg.append("g")
-      // .attr("class", "tooltip hidden")
-      // .style("opacity", 0)
+    // this.tip =this.svg.append("g")
+    // .attr("class", "tooltip hidden")
+    // .style("opacity", 0)
 
   }
-
 
   private addGridLines() {
 
@@ -179,17 +298,21 @@ export class ScatterComponent implements OnInit {
       .tickSizeOuter(0);// Ticks on both outer sides
 
 
-    const yAxis = this.g
+    this.yAxis = this.g
       .append("g")
+      .attr("class", "y-axis")
       .call(yAxisGenerator);
 
     //hide domain and labels
-    yAxis.selectAll("text").remove()
-    yAxis.select(".domain").remove();
+    this.yAxis.selectAll("text").remove()
+    this.yAxis.select(".domain").remove();
+
+
+
   }
 
 
-  private addLegend() {
+  private addLegend_Diameter() {
 
 
     const x_legend = this.inner_width - 200;
@@ -226,7 +349,7 @@ export class ScatterComponent implements OnInit {
       .enter()
       .append("circle")
       .attr("class", "legend-dot")
-      .attr("class", "dot")      
+      .attr("class", "dot")
       .attr("r", d => this.d(d.value))
       .attr("cy", this.max_d_fixed + 2) // max_d_fixed cosi il più grande è sempre dentro svg
       .attr("cx", (d, i) => i * 130 + 50);//3
@@ -253,6 +376,73 @@ export class ScatterComponent implements OnInit {
 
   }
 
+  private addLegend_XY() {
+
+    const _that = this;
+    const offset = this.inner_height - 30;
+
+    const legendUomGroup =
+      this.g.append("g")
+        .classed("legend-uom", true)
+        .attr("transform", "translate(0 " + offset + ")")
+
+    //load sv images --> TODO: qui l'import è un po' grezzo, si riesce a non schiantare il path ad asset?
+    Promise.all([
+      d3.xml("../../assets/arrow-right.svg"),
+      d3.xml("../../assets/arrow-up.svg")
+    ])
+      .then(([right, up]) => {
+
+
+        //// legend UP
+        let g_up = legendUomGroup.append("g")
+          .attr("transform", "translate(0,0)")
+        g_up.node().appendChild(up.documentElement) //d3's selection.node() returns the DOM node, so we can use plain Javascript to append content
+
+        let txt = g_up.append("text");
+
+        txt.append("tspan")
+          .attr("class", "bold")
+          .attr("x", 30)
+          .attr("y", 20)
+          .attr("text-anchor", "start")
+          .attr('alignment-baseline', 'middle')
+          .text("DISTANCE");
+        txt
+          .append("tspan")
+          .text("(au)")
+          .attr("class", "text")
+          .attr("dx", 4);
+
+
+        //// legend RIGHT
+        let bbox = g_up.node().getBBox(); 
+        let y = parseFloat(bbox.height + bbox.y) +20;
+        let g_rigth = legendUomGroup.append("g").attr("transform", "translate(0," + y + ")")
+
+        g_rigth.node().appendChild(right.documentElement)
+        
+        let txt2 = g_rigth.append("text");
+
+        txt2.append("tspan")
+          .attr("class", "bold")
+          .attr("x",30)
+          .attr("y", 10)
+          .attr("text-anchor", "start")
+          .attr('alignment-baseline', 'middle')
+          .text("VELOCITY");
+        txt2
+          .append("tspan")
+          .text("(km/s)")
+          .attr("class", "text")
+          .attr("dx", 4);
+
+
+      });
+
+
+
+  }
 
   private addBtnGroup() {
 
@@ -260,7 +450,6 @@ export class ScatterComponent implements OnInit {
 
     const buttonGroup = this.svg.append("g")
       .attr("class", "button-group")
-      //.attr("transform", "translate(" + this.btnGroup_offset_x + "," + this.btnGroup_offset_y + ")")
       .attr("transform", "translate(0," + this.btnGroup_offset_y + ")"); // move down to make space to title
     //.attr("transform", "translate(0,0)");
 
@@ -311,7 +500,6 @@ export class ScatterComponent implements OnInit {
   private calc_btn_x(d, i) {
     return i * 52 + this.btn_r * 1.1 + 3
   }
-
 
   private onDayMouseover(ev) {
 
@@ -368,31 +556,6 @@ export class ScatterComponent implements OnInit {
   }
 
 
-  private setScale() {
-
-    const max_x = parseFloat(d3.max(this.data, d => d["velocity_ks"]));
-    const max_y = parseFloat(d3.max(this.data, d => d["distance_au"]));
-
-    this.max_d = parseFloat(d3.max(this.data, d => d["diameter"]));
-    this.min_d = parseFloat(d3.min(this.data, d => d["diameter"]));
-
-    //console.log(min_d, max_d);
-
-    this.x = d3.scaleLinear()
-      .domain([0, max_x])
-      .range([0, this.inner_width]);
-
-    this.y = d3.scaleLinear()
-      .domain([0, max_y])
-      .range([this.inner_height, this.margin_top]);
-
-    this.d = d3.scaleSqrt()
-      .domain([0, this.max_d])
-      .range([this.min_d_fixed, this.max_d_fixed]); // max_d_fixed is reference point for legend
-
-
-  }
-
   private createCustomDef() {
 
     const defs = this.svg.append("defs");
@@ -413,7 +576,7 @@ export class ScatterComponent implements OnInit {
     //   .attr("offset", (d) => d.offset)
     //   .attr("stop-color", (d) => d.color);
 
-   
+
     // //Filter for the outside glow
     var filter = defs.append("filter")
       .attr("id", "glow");
@@ -431,101 +594,6 @@ export class ScatterComponent implements OnInit {
 
   }
 
-  private showTooltip(yoffset, ev) {
-
-    //console.log("show tooltip", ev.currentTarget);
-    const t = d3.transition().duration(100);
-    const d = d3.select(ev.currentTarget).data()[0];
-    var f = d3.format(".2f");
-
-    const html = '<p>Name: ' + d["name"] + '</p>' +
-      '<p>Diameter: ' + f(d["diameter"]) + ' km</p>' +
-      '<p>Magnitude: ' + f(d["magnitude"]) + ' h</p>' +
-      '<p>Distance: ' + f(d["distance_au"]) + ' au</p>' +
-      '<p>Velocity: ' + f(d["velocity_ks"]) + ' km/s</p>';
-
-
-    d3.select(".tooltip")
-      .html(html)
-     // .classed("hidden", false)
-      .style("left", d3.pointer(ev)[0] + "px")
-      .style("top", d3.pointer(ev)[1] + yoffset + "px")  //+ l'offset del chart
-      .transition(t)
-      .style("opacity", .9)
-
-
-  }
-
-  private hideTooltip(ev) {
-    // console.log("hide tooltip", (ev.currentTarget));
-    d3.select(".tooltip")
-     .style("opacity", 0)
-     
-  }
-
-  private addDots() {
-
-    const t_enter = d3.transition().duration(750);
-    const t_exit = d3.transition().duration(500);
-    const _that = this;
-
-    //join
-    const dot_wrap = this.g
-      .selectAll('.dot-wrap')
-      .data(_that.data, d => d.name)
-      .join(
-        function (group) {
-
-          //ENTER
-          let enter = group.append("g").attr("class", "dot-wrap");
-          enter.append("circle")
-            .attr("class", "dot")
-            //.style("fill", "url(#dot-gradient)")
-            .style("filter", "url(#glow)")
-            .attr("cy", d => _that.y(d.distance_au))
-            .attr("cx", d => _that.x(d.velocity_ks))
-            .transition(t_enter)
-            .attr("r", d => _that.d(d.diameter))
-
-
-          enter.append("circle")
-            .attr("class", "center")
-            .style("fill", "#2AF598")
-            .attr("cy", d => _that.y(d.distance_au))
-            .attr("cx", d => _that.x(d.velocity_ks))
-            .transition(t_enter)
-            .attr("r", 0.5)
-
-          enter
-            .on("mouseenter", _that.showTooltip.bind(this, _that.chartOffset))
-            .on("mouseleave", _that.hideTooltip.bind(this));
-
-          return enter;
-        },
-        function (group) {
-          //UPDATE
-          // TODO check if same neo can be in different days
-        },
-        function (group) {
-          //EXIT
-          group.select(".dot")
-            .transition(t_exit)
-            .attr("r", 0)
-            .remove();
-
-          group.selectAll(".center")
-            .transition(t_exit)
-            .attr("r", 0).remove();
-
-          group.transition(t_exit).remove();
-          return group;
-
-        }
-      );
-
-
-
-  }
 
   private getToday() {
 

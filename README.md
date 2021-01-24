@@ -1,6 +1,16 @@
 # Tva
 
+This is a small interface to monitor objects that pass close to the earth over the past week. Data come from API made available by NASA, which can be found at this address: https://api.nasa.gov/.
+In particular the "Asteroids - NeoWs" is used.
+
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.0.6.
+
+## Installation
+This app will install all required dependencies automatically. 
+Just start the commands below in the root folder where you stored the package.
+```SH
+$ npm install
+```
 
 ## Development server
 
@@ -14,13 +24,6 @@ Run `ng generate component component-name` to generate a new component. You can 
 
 Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
 
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
 
 ## Further help
 

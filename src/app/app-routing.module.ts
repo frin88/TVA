@@ -7,11 +7,8 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 
 
 const routes: Routes = [
- 
- { path: 'dashboard', component: DashboardComponent },
-{ path: 'scatter', component: ScatterComponent } // just to test if routing is ok
- 
-
+  {path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+ { path: 'dashboard', component: DashboardComponent }
 ]
 
 @NgModule({
