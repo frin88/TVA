@@ -11,7 +11,7 @@
 }
 
 .container {
-    min-width: 350px;
+    min-width: 400px;
     width: 99vw;
     height: 100vh;
     display: flex;
@@ -19,14 +19,13 @@
     justify-content: space-evenly;
     background-color: transparent;
     padding: 2%;
-    // @include media-breakpoint-down(md) {
-    //     flex-direction: column;
-    // }
+    overflow-y: visible;
+    
 
    
     #dayAsteroids {
         height: 90vh;
-        min-height: 400px;
+        min-width: 600px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -59,6 +58,7 @@
             background-color: transparent;
             height: 100%;
             width: 100%;
+            min-height: 300px;
             #chartContainer {
                 position: relative; // for tooltip
                 display: flex;
@@ -94,11 +94,11 @@
         flex:1;
        
         h1{
-            align-self: "middle";
+           text-align: center;
         }
         
 
-        #chartAndDataContainer_ {
+        #chartAndDataContainer_1 {
             position: relative;
             display: flex;
             flex-direction: column;
@@ -106,7 +106,7 @@
             background-color: transparent;
             height: 100%;
             width: 100%;
-            #chartContainer_ {
+            #chartContainer_1 {
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -133,3 +133,18 @@
 }
 
 
+@media screen and (max-width: 767px) {
+    .container {
+        h1 {
+            font-size: 1.5rem;
+        }
+    }
+  }
+  
+  @media screen and (max-width: 414px) {
+    .container {
+        h1 {
+            font-size: 1rem;
+        }
+    }
+  }

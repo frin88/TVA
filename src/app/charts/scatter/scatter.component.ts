@@ -32,14 +32,14 @@ export class ScatterComponent implements OnInit {
 
   //margin => inner = viewport - margin*2
   private margin_side = 30;
-  private margin_top = 10;
+  private margin_top = 80;
   //////////////////////////
 
-  private chartOffset = 150; // TODO da rinominare è la y iniziale del chart 
+  //private chartOffset = 150; // TODO da rinominare è la y iniziale del chart 
   private btnGroup_offset_y = 30;
-  private btn_r = 20;
+  private btn_r = 20; // radius of button
 
-
+  private main_offsetY = this.btnGroup_offset_y + this.btn_r * 2 + this.btn_r;
   // scales
   private x;
   private y;
@@ -121,13 +121,13 @@ export class ScatterComponent implements OnInit {
 
     this.svg = d3.select(this.hostElement).append('svg')
       .attr('width', '100%')
-      .attr('height', '100%');
+      .attr('height', '100%').attr("id", "mysvg")
 
     this.viewport_width = parseInt(this.svg.style("width"));
     this.viewport_height = parseInt(this.svg.style("height"));
 
     this.inner_width = parseInt(this.svg.style("width")) - (this.margin_side * 2);
-    this.inner_height = parseInt(this.svg.style("height")) - (this.margin_top * 2) - this.chartOffset - this.btnGroup_offset_y;
+    this.inner_height = parseInt(this.svg.style("height")) - (this.margin_top * 2);
 
     // set viewbox = viewport => zoom = 0, resizable
     this.svg.attr('viewBox', '0 0 ' + this.viewport_width + ' ' + this.viewport_height);
@@ -167,18 +167,17 @@ export class ScatterComponent implements OnInit {
 
     // main group
     this.g = this.svg.append("g")
-      .attr("transform", "translate(0," + this.chartOffset + ")") // move down to make space to buttons
+      .attr("transform", "translate(0," + this.main_offsetY + ")") // move down to make space to buttons -> buttons are on separate g because they dont'have to overlap chart   
       .attr("class", "main");
 
-
+    this.addLegend_XY();
     this.addBtnGroup();
     this.createCustomDef();
     this.addGridLines();
     this.addLegend_Diameter();
-    this.addLegend_XY();
+
 
   }
-
 
 
   private addDots() {
@@ -214,17 +213,25 @@ export class ScatterComponent implements OnInit {
                 .duration(400)
                 .style("opacity", .9)
 
+             
+              //get inverse position for translated group so it works also when resized
+              var pt = _that.svg.node().createSVGPoint();
+              pt.x = d3.pointer(ev)[0];
+              pt.y = d3.pointer(ev)[1];
+              pt = pt.matrixTransform(enter.node().getCTM());
+
               _that.tip.html(html)
-                .style("left", d3.pointer(ev)[0] + "px")
-                .style("top", d3.pointer(ev)[1] + _that.chartOffset + "px")
+                .style("left", pt.x + "px")
+                .style("top",  pt.y + "px")
+             
 
             })
             .on('mouseout', d => {
-
-              _that.tip.style("opacity", 0)
+              //console.log("mouseout")
+              _that.tip.style("opacity", 0);
 
             })
-        
+
           enter.append("circle")
             .attr("class", "dot")
             .style("filter", "url(#glow)")
@@ -240,7 +247,7 @@ export class ScatterComponent implements OnInit {
             .attr("cy", d => _that.y(d.distance_au))
             .attr("cx", d => _that.x(d.velocity_ks))
             .transition(t_enter)
-            .attr("r", 0.5)
+            .attr("r", 0.9)
 
           return enter;
         },
@@ -280,14 +287,8 @@ export class ScatterComponent implements OnInit {
     // i choose html for simplicity now
     this.tip = d3.select(this.hostElement).append("div")
       .attr("class", "tooltip  text")
-      .style("position", "absolute")
       .style("z-index", "999")
       .style("opacity", 0)
-
-    // this.tip =this.svg.append("g")
-    // .attr("class", "tooltip hidden")
-    // .style("opacity", 0)
-
   }
 
   private addGridLines() {
@@ -318,7 +319,7 @@ export class ScatterComponent implements OnInit {
     const x_legend = this.inner_width - 200;
     const dataLegend = [{ "value": this.min_d, "label": "Min Km" }, { "value": this.max_d, "label": "Max Km" }];
 
-    // add legend group
+    // add legend group outside main so that it does not overlap with chart
     const legendGroup = this.svg.append("g")
       .attr("class", "legend")
       .attr("transform", "translate(" + x_legend + "  , 0)");
@@ -379,7 +380,7 @@ export class ScatterComponent implements OnInit {
   private addLegend_XY() {
 
     const _that = this;
-    const offset = this.inner_height - 30;
+    const offset = this.inner_height - (this.btnGroup_offset_y);
 
     const legendUomGroup =
       this.g.append("g")
@@ -416,17 +417,17 @@ export class ScatterComponent implements OnInit {
 
 
         //// legend RIGHT
-        let bbox = g_up.node().getBBox(); 
-        let y = parseFloat(bbox.height + bbox.y) +20;
+        let bbox = g_up.node().getBBox();
+        let y = parseFloat(bbox.height + bbox.y) + 20;
         let g_rigth = legendUomGroup.append("g").attr("transform", "translate(0," + y + ")")
 
         g_rigth.node().appendChild(right.documentElement)
-        
+
         let txt2 = g_rigth.append("text");
 
         txt2.append("tspan")
           .attr("class", "bold")
-          .attr("x",30)
+          .attr("x", 30)
           .attr("y", 10)
           .attr("text-anchor", "start")
           .attr('alignment-baseline', 'middle')
@@ -446,22 +447,21 @@ export class ScatterComponent implements OnInit {
 
   private addBtnGroup() {
 
-
-
     const buttonGroup = this.svg.append("g")
       .attr("class", "button-group")
-      .attr("transform", "translate(0," + this.btnGroup_offset_y + ")"); // move down to make space to title
+      .attr("transform", "translate(0," + this.btnGroup_offset_y + ")"); // move down to make space to title and buttons
     //.attr("transform", "translate(0,0)");
 
     buttonGroup.append("text")
       .text("Select one day to update the chart")
-      .attr("class", "text");
+      .attr("class", "text")
 
-
+    
     ///////////////////////////////////////////////////////////////////////////
+     let bbox = buttonGroup.node().getBBox();
+     let y = bbox.height + 15; // text y =>height og btn_g + smth;
 
     const buttons = buttonGroup.selectAll(".btn-wrap").data(this.day_array);
-
 
     const btn_wrap = buttons.enter()
       .append("g")
@@ -472,7 +472,7 @@ export class ScatterComponent implements OnInit {
       .append("circle")
       .attr("class", (d) => d.value !== this.selectedDay ? "day-btn" : "day-btn__selected")
       .attr("r", this.btn_r)
-      .attr("cy", 30)
+      .attr("cy", y)
       .attr("cx", (d, i) => this.calc_btn_x(d, i));
 
     //day-lbl
@@ -480,8 +480,8 @@ export class ScatterComponent implements OnInit {
     btn_wrap
       .append("text")
       .attr("x", (d, i) => this.calc_btn_x(d, i))
-      .attr("y", 30)
-      .attr("class", (d) => d.value !== this.selectedDay ? "text day-lbl" : "text day-lbl__selected")
+      .attr("y", y)
+      .attr("class", (d) => d.value !== this.selectedDay ? "text day-lbl" : " day-lbl__selected")
       .style('font-size', this.btn_r * 0.6 + 'px')
       .attr('alignment-baseline', 'middle')
       .attr("text-anchor", "middle")
@@ -581,7 +581,7 @@ export class ScatterComponent implements OnInit {
     var filter = defs.append("filter")
       .attr("id", "glow");
     filter.append("feGaussianBlur")
-      .attr("stdDeviation", "1.8")
+      .attr("stdDeviation", "1.9")
       .attr("result", "coloredBlur");
     var feMerge = filter.append("feMerge");
     feMerge.append("feMergeNode")

@@ -26,11 +26,12 @@ export class Top5Component implements OnInit {
   private inner_height;
 
   //margin => inner = viewport - margin*2
-  private margin_side = 50;
-  private margin_top = 40;
+  private margin_side = 30;
+  private margin_top = 30;
   //////////////////////////
-  private chartOffset_y = 40;
-  private text_from_rects=70; // distanza tra neo-info e rects
+  private chartOffset_y = 30;
+  private text_from_rects=20; // distanza tra neo-info e rects
+  private _distance_between_rects=100; // controls distance between rects
 
   //leged items
   private dim = 10; // side of squares in legen
@@ -205,33 +206,33 @@ export class Top5Component implements OnInit {
             .attr("r", 1);
 
             const f = d3.format(".2f")
-
+            // let maing = _that.svg.node().getBBox(); 
           //// legend ////
           enter = group.append("g")
             .attr("class", "neo-info");
 
           let text = enter.append("text")
             .attr("class", "text row")
-            .attr("x", (d) => _that.x_outer() + _that.text_from_rects)
+            .attr("x", (d) => _that.x_outer() * 2)
             .attr("y", (d, i) => _that.y_outer(i))
             .attr("text-anchor", "start");
 
           text
             .append("tspan")
             .text((d) => "Name: " + d.name)
-            .attr("x", (d) => _that.x_outer() + _that.text_from_rects)
+            .attr("x", (d) => _that.x_outer() * 2)
             .attr("y", (d, i) => _that.y_outer(i));
 
           text
             .append("tspan")
             .text((d) => "Diameter: " + f(d.diameter))
-            .attr("x", (d) => _that.x_outer() + _that.text_from_rects)
+            .attr("x", (d) => _that.x_outer() * 2)
             .attr("dy", 20)
 
           text
             .append("tspan")
             .text((d) => "Magnitude: " + d.magnitude)
-            .attr("x", (d) => _that.x_outer() + _that.text_from_rects)
+            .attr("x", (d) => _that.x_outer() * 2)
             .attr("dy", 20)
 
           return enter;
@@ -252,12 +253,12 @@ export class Top5Component implements OnInit {
 
 //heleper functions for coord
   private x_outer() {
-    return this.inner_width / 2 - this.margin_side;
+    return this.inner_width / 4 ;
 
   }
 
   private y_outer(i) {
-    return this.inner_height / this.howmany + (i * 110);
+    return this.inner_height / this.howmany + (i * this._distance_between_rects);
   }
 
   private x_inner(d) {
@@ -280,11 +281,13 @@ export class Top5Component implements OnInit {
  
   private addLegend() {
 
-    // add legend group
-    const legendGroup = this.svg.append("g")
+        
+      //let bbox = this.g.node().getBBox(); 
+  
+     
+      const legendGroup = this.g.append("g")
       .attr("class", "legend")
-      .attr("transform", "translate(" + this.x_outer() + ", " + this.margin_top + ")"); // inline with viz
-
+      .attr("transform", "translate(" + this.x_outer() + ", 0)");// x inline with viz y upper
 
 
     let txt = legendGroup
@@ -308,8 +311,8 @@ export class Top5Component implements OnInit {
 
     const _that = this;
     //ENTER
-    legendGroup.append("g")
-      .attr("class", "rect-wrap-legend");
+    // legendGroup.append("g")
+    //   .attr("class", "rect-wrap-legend");
 
     legendGroup.append("rect")
       .attr("class", "rect-inner")
@@ -372,7 +375,7 @@ export class Top5Component implements OnInit {
     var filter = defs.append("filter")
       .attr("id", "glow");
     filter.append("feGaussianBlur")
-      .attr("stdDeviation", "1.8")
+      .attr("stdDeviation", "1.9")
       .attr("result", "coloredBlur");
     var feMerge = filter.append("feMerge");
     feMerge.append("feMergeNode")
