@@ -11,33 +11,30 @@
   font-weight: normal;
 
   &__selected{
-    fill:$light-green
+    fill:$light-green;
   }
 }
 
 .day-lbl{
- 
   &__selected{
-    fill:$black
+    fill:$dark-green
   }
 }
 
 line{stroke-width:1;}
 
 .tooltip{
+  position:absolute;
+  display:block;
   box-shadow: 0 0 20px 0 rgba(255,255,255,0.1), 0 2px 4px 0 rgba(0,0,0,0.5);
   min-width: 180px;
   border:1px solid $white;
   padding:1em;
   background: linear-gradient(180deg, #0A1D19 0%, #184159 86.84%, #19435D 100%);
-  
+  pointer-events:none; //https://stackoverflow.com/questions/35359400/mouse-moves-faster-than-tooltip
   p {
     margin: 0.5em;
   }
 
 }
-
-// .tooltip.hidden{
-//   display: none;
-// }
 
