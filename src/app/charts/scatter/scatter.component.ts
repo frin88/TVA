@@ -33,31 +33,36 @@ export class ScatterComponent implements OnInit {
   //margin => inner = viewport - margin*2
   private margin_side = 30;
   private margin_top = 80;
-  //////////////////////////
 
-  //private chartOffset = 150; // TODO da rinominare è la y iniziale del chart 
-  private btnGroup_offset_y;
-  private btn_r = 20; // radius of button
-  private btw_btn_distance = 52;// distance between buttons
+
+  //btn_grop
+  private btnGroup_offset_y; // distance from top
+  private btn_r; // radius of button
+  private btw_btn_distance;// distance between buttons
 
 
   // legend XY
   private legendLbl_XY = []; //coord first lbl
-  private legend_lbl_distance ; // distance between 2 labels
-  private legendXY_offset;//= this.inner_height - (this.btnGroup_offset_y);
+  private legend_lbl_distance; // distance between 2 labels
+  private legendXY_offset;
 
-  ///////////
-  private main_offsetY; //= this.btnGroup_offset_y + this.btn_r * 2 + this.btn_r;
+  private main_offsetY;
   // scales
   private x;
   private y;
   private d;
+  private f; // font scale
 
   ///diameter
   private max_d;
   private min_d;
-  private max_d_fixed ; // this controls max circles sizes
-  private min_d_fixed ;// this controls min circles sizes
+  private max_d_fixed; // this controls max circles sizes
+  private min_d_fixed;// this controls min circles sizes
+
+  //diamter legend
+  private legendcircle_from_title; // distance between title (DIAMETER) and legend circles
+  private legend_lbl_from_cx; // distance from circle center and label text
+  private legend_cx_btw;// distance between centers of legend items
 
   //transitions
   private t;
@@ -71,8 +76,6 @@ export class ScatterComponent implements OnInit {
 
   private tip;
   private yAxis;
-
-
 
   private scale_factor;
   private base_width = 1100;
@@ -91,7 +94,7 @@ export class ScatterComponent implements OnInit {
     this.fillDaysStruct();
     this.updateChart(false);
 
-    
+
 
     // d3.select(window).on("resize", function () {
     //   const newWidth = parseFloat(d3.select("svg").style("width"));
@@ -170,7 +173,7 @@ export class ScatterComponent implements OnInit {
       .attr('width', '100%')
       .attr('height', '100%').attr("id", "mysvg");
 
-     
+
     //on chart resize
     //https://medium.com/@maheshsenni/responsive-svg-charts-viewbox-may-not-be-the-answer-aaf9c9bc4ca2
     //https://www.visualcinnamon.com/2019/04/mobile-vs-desktop-dataviz/
@@ -178,21 +181,19 @@ export class ScatterComponent implements OnInit {
     this.viewport_width = parseInt(this.svg.style("width"));
     this.viewport_height = parseInt(this.svg.style("height"));
 
-    // get scale factor --> basewidth is max , viewport/max
-    this.scale_factor = Math.min(1, (this.viewport_width / this.base_width)) //TODO occhio ai decimali
+    // get scale factor --> basewidth is max , scale = viewport/max
+    this.scale_factor = Math.min(1, (this.viewport_width / this.base_width)).toFixed(2) //TODO occhio ai decimali per performance
     console.log("scale factor", this.scale_factor);
 
-    this.inner_width = parseInt(this.svg.style("width")) - (this.margin_side*this.scale_factor * 2);
-    this.inner_height = parseInt(this.svg.style("height")) - (this.margin_top*this.scale_factor * 2);
+    this.inner_width = parseInt(this.svg.style("width")) - (this.margin_side * this.scale_factor * 2);
+    this.inner_height = parseInt(this.svg.style("height")) - (this.margin_top * this.scale_factor * 2);
 
     // set viewbox = viewport => zoom = 0, resizable
     this.svg.attr('viewBox', '0 0 ' + this.viewport_width + ' ' + this.viewport_height);
     this.svg.attr("preserveAspectRatio", "xMinYMid ");
 
-    console.log("SCATTER - svg width ", this.viewport_width, " svg height", this.viewport_height);
-    console.log("SCATTER - svg INNER width ", this.inner_width, " svg INNER height", this.inner_height);
-    
-    
+    // console.log("SCATTER - svg width ", this.viewport_width, " svg height", this.viewport_height);
+    // console.log("SCATTER - svg INNER width ", this.inner_width, " svg INNER height", this.inner_height);
 
     this.setScaledParams();
   }
@@ -201,23 +202,27 @@ export class ScatterComponent implements OnInit {
   private setScaledParams() {
 
 
-    this.btnGroup_offset_y = 20 * this.scale_factor; 
-    this.btn_r = 20 *this.scale_factor; // radius of button
-    this.btw_btn_distance = 52 *this.scale_factor;// distance between buttons
-  
-  
+    // button groups
+    this.btnGroup_offset_y = 20 * this.scale_factor; // distance buttons from top 20
+    this.btn_r = 20 * this.scale_factor; // radius of button //20
+    this.btw_btn_distance = 52 * this.scale_factor;// distance between buttons 52
+
+
     // legend XY
-    this.legendLbl_XY = [30*this.scale_factor, 15*this.scale_factor];
-    this.legend_lbl_distance = 10*this.scale_factor; 
-    this.legendXY_offset =this.inner_height - (this.btnGroup_offset_y); 
-  
-    ///////////
- 
-    this.max_d_fixed = 50*this.scale_factor; // this controls max circles sizes
+    this.legendLbl_XY = [30 * this.scale_factor, 15 * this.scale_factor]; //coord of first legend item
+    this.legend_lbl_distance = 10 * this.scale_factor; //y distance between legend  item
+    this.legendXY_offset = this.inner_height - (this.btnGroup_offset_y);  // y of legend whole
+
+    // legend Diameter
+    this.max_d_fixed = 50 * this.scale_factor; // this controls max circles sizes
     this.min_d_fixed = 1;// this controls min circles sizes
-  
+    this.legendcircle_from_title = 15 * this.scale_factor; // distance between title (DIAMETER) and legend circles
+    this.legend_lbl_from_cx = 10 * this.scale_factor;
+    this.legend_cx_btw = 120 * this.scale_factor; // distance between centers of legend items
+
+    // offset for chart
     this.main_offsetY = this.btnGroup_offset_y + this.btn_r * 2 + this.btn_r; // da dove inizio ad appendere i btn + btn diametro + smth
-    
+
   }
 
 
@@ -244,6 +249,10 @@ export class ScatterComponent implements OnInit {
       .range([this.min_d_fixed, this.max_d_fixed]); // max_d_fixed is reference point for legend
 
 
+    this.f = d3.scaleLinear()
+      .domain([1, this.base_width])
+      .range([9, 13])
+      .clamp(true);
   }
 
 
@@ -413,15 +422,18 @@ export class ScatterComponent implements OnInit {
     // add legend group outside main so that it does not overlap with chart
     const legendGroup = this.svg.append("g")
       .attr("class", "legend")
-  
+
 
     legendGroup
       .append("text")
       .attr("class", "bold")
-      .attr("x", this.calc_legendCircle_cx(0) - this.d(this.min_d)) // la x del primo cerchio - quanto occupa il primo cerchio this.min_d_fixed == d(this.min_d)
-      .attr("y", 21*this.scale_factor)
+      .attr("x", this.calc_legendCircle_cx(0) - this.d(this.min_d)) // title_X = la x del primo cerchio - quanto occupa il primo cerchio 
+      .attr("y", 21 * this.scale_factor) //questo
       .attr("text-anchor", "start")
       .text("DIAMETER")
+      .style('font-size', this.f(this.viewport_width) + 'px')
+
+    console.log("font size at " + this.viewport_width + " is: " + this.f(this.viewport_width))
 
 
     // cerchi MAX e MIN
@@ -443,7 +455,7 @@ export class ScatterComponent implements OnInit {
       .attr("class", "legend-dot")
       .attr("class", "dot")
       .attr("r", d => this.d(d.value))
-      .attr("cy",  this.calc_legendCircle_cy()) // max_d_fixed cosi il più grande è sempre dentro svg + smth
+      .attr("cy", this.calc_legendCircle_cy()) // max_d_fixed cosi il più grande è sempre dentro svg + smth
       .attr("cx", (d, i) => this.calc_legendCircle_cx(i));//3
 
 
@@ -456,41 +468,40 @@ export class ScatterComponent implements OnInit {
       .attr("class", "center-legend")
       .style("fill", "#2AF598")
       .attr("r", this.min_d_fixed)
-      .attr("cy",  this.calc_legendCircle_cy())
-      .attr("cx", (d, i) =>  this.calc_legendCircle_cx(i));//2
+      .attr("cy", this.calc_legendCircle_cy())
+      .attr("cx", (d, i) => this.calc_legendCircle_cx(i));//2
 
     legendCenters.append("text")
-      .attr("x", (d, i) => this.calc_legendCircle_cx(i) + 10*this.scale_factor ) 
+      .attr("x", (d, i) => this.calc_legendCircle_cx(i) + this.legend_lbl_from_cx)
       .attr("y", this.calc_legendCircle_cy())
       .attr("text-anchor", "start")
+      .style('font-size', this.f(this.viewport_width) + 'px')
+      //.style('font-size', this.btn_r * 0.7 + 'px')
       .attr("class", "text")
       .text(d => d.label)
 
-      // translate at the end so that   x = inner_width - legendGroup width
-      let bbox = legendGroup.node().getBBox();
-      let legend_x = this.inner_width - bbox.width - bbox.x;
-      legendGroup.attr("transform", "translate(" + legend_x + " ," + 0 + ")");
+    // translate at the end so that i can position x =>  x = inner_width - legendGroup width
+    let bbox = legendGroup.node().getBBox();
+    let legend_x = this.inner_width - bbox.width - bbox.x;
+    legendGroup.attr("transform", "translate(" + legend_x + " ," + 0 + ")");
 
   }
 
-private calc_legendCircle_cx(i){
- 
- return i*150*this.scale_factor;
-}
+  private calc_legendCircle_cx(i) {
 
-private calc_legendCircle_cy(){
-  return this.max_d_fixed + 15*this.scale_factor  // 12 è la distanza tra testo DIAM e cerchi nella legend
-}
+    return i * this.legend_cx_btw;
+  }
+
+  private calc_legendCircle_cy() {
+    return this.max_d_fixed + this.legendcircle_from_title;
+  }
 
   private addLegend_XY() {
-
-    const _that = this;
-
 
     const legendUomGroup =
       this.g.append("g")
         .classed("legend-uom", true)
-        .attr("transform", "translate(0 " + this.legendXY_offset + ")")
+    //  .attr("transform", "translate(0 " + this.legendXY_offset + ")")
 
     //load sv images --> TODO: qui l'import è un po' grezzo, si riesce a non schiantare il path ad asset?
     Promise.all([
@@ -501,25 +512,31 @@ private calc_legendCircle_cy(){
 
 
         //// legend UP
-        let g_up = legendUomGroup.append("g")
-          .attr("transform", "translate(0,0)")
+        let g_up = legendUomGroup.append("g");
+
         g_up.node().appendChild(up.documentElement) //d3's selection.node() returns the DOM node, so we can use plain Javascript to append content
 
         let txt = g_up.append("text");
 
         //TODO qui x e y si possono ricavare dalla freccia?
+        let gup_bbox = g_up.node().getBBox();
+        console.log("gup_bbox",gup_bbox);
 
         txt.append("tspan")
           .attr("class", "bold")
-          .attr("x", this.legendLbl_XY[0])
-          .attr("y", this.legendLbl_XY[1])
+          .attr("x", this.legendLbl_XY[0] + 5)
+          .attr("y", gup_bbox.width - gup_bbox.y) // text centerd in arrow
+         // .attr("x", this.legendLbl_XY[0] + 5)
+          //.attr("y", this.legendLbl_XY[1])
           .attr("text-anchor", "start")
           .attr('alignment-baseline', 'middle')
+          .style('font-size', this.f(this.viewport_width) + 'px')
           .text("DISTANCE");
         txt
           .append("tspan")
           .text("(au)")
           .attr("class", "text")
+          .style('font-size', this.f(this.viewport_width) + 'px')
           .attr("dx", 4);
 
 
@@ -529,21 +546,31 @@ private calc_legendCircle_cy(){
         let g_rigth = legendUomGroup.append("g").attr("transform", "translate(0," + y + ")")
 
         g_rigth.node().appendChild(right.documentElement)
-
+  
         let txt2 = g_rigth.append("text");
 
         txt2.append("tspan")
           .attr("class", "bold")
-          .attr("x", 30)
-          .attr("y", 10)
+          .attr("x", this.legendLbl_XY[0] + 5)
+          .attr("y",  gup_bbox.width - gup_bbox.y)  //text centerd in arrow
           .attr("text-anchor", "start")
           .attr('alignment-baseline', 'middle')
+          .style('font-size', this.f(this.viewport_width) + 'px')
           .text("VELOCITY");
+
         txt2
           .append("tspan")
           .text("(km/s)")
           .attr("class", "text")
+          .style('font-size', this.f(this.viewport_width) + 'px')
           .attr("dx", 4);
+
+
+          // translate at the end so i can calc y properly taking in account height
+        let bbox3 = legendUomGroup.node().getBBox();
+        
+        let y1 = this.legendXY_offset  - ( bbox3.y) - 5;
+        legendUomGroup.attr("transform", "translate(0 " + y1 + ")")
 
 
       });
@@ -562,11 +589,13 @@ private calc_legendCircle_cy(){
     buttonGroup.append("text")
       .text("Select one day to update the chart")
       .attr("class", "text")
+      .style('font-size', this.f(this.viewport_width) + 'px')
+
 
 
     ///////////////////////////////////////////////////////////////////////////
     let bbox = buttonGroup.node().getBBox();
-    let y = bbox.height + 15; // text y =>height og btn_g + smth;
+    let y = bbox.height + 20 * this.scale_factor; // text y =>height og btn_g + smth;
 
     const buttons = buttonGroup.selectAll(".btn-wrap").data(this.day_array);
 
@@ -589,7 +618,8 @@ private calc_legendCircle_cy(){
       .attr("x", (d, i) => this.calc_btn_x(d, i))
       .attr("y", y)
       .attr("class", (d) => d.value !== this.selectedDay ? "text day-lbl" : " day-lbl__selected")
-      .style('font-size', this.btn_r * 0.7 + 'px')
+      .style('font-size', this.btn_r * 0.7 + 'px') // the only font that NOT depends on font-size scale because it has to be inside btn
+      // .style('font-size', this.f(this.viewport_width)  + 'px') 
       .attr('alignment-baseline', 'middle')
       .attr("text-anchor", "middle")
       .text(d => d.label);
@@ -605,7 +635,6 @@ private calc_legendCircle_cy(){
   }
 
   private calc_btn_x(d, i) {
-    //return i * 52 + this.btn_r * 1.1 + 3
     return i * this.btw_btn_distance + this.btn_r * 1.1 + 3
   }
 
