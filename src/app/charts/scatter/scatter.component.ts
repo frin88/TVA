@@ -36,10 +36,18 @@ export class ScatterComponent implements OnInit {
   //////////////////////////
 
   //private chartOffset = 150; // TODO da rinominare è la y iniziale del chart 
-  private btnGroup_offset_y = 30;
+  private btnGroup_offset_y;
   private btn_r = 20; // radius of button
+  private btw_btn_distance = 52;// distance between buttons
 
-  private main_offsetY = this.btnGroup_offset_y + this.btn_r * 2 + this.btn_r;
+
+  // legend XY
+  private legendLbl_XY = []; //coord first lbl
+  private legend_lbl_distance ; // distance between 2 labels
+  private legendXY_offset;//= this.inner_height - (this.btnGroup_offset_y);
+
+  ///////////
+  private main_offsetY; //= this.btnGroup_offset_y + this.btn_r * 2 + this.btn_r;
   // scales
   private x;
   private y;
@@ -48,8 +56,8 @@ export class ScatterComponent implements OnInit {
   ///diameter
   private max_d;
   private min_d;
-  private max_d_fixed = 50; // this controls max circles sizes
-  private min_d_fixed = 1;// this controls min circles sizes
+  private max_d_fixed ; // this controls max circles sizes
+  private min_d_fixed ;// this controls min circles sizes
 
   //transitions
   private t;
@@ -64,6 +72,11 @@ export class ScatterComponent implements OnInit {
   private tip;
   private yAxis;
 
+
+
+  private scale_factor;
+  private base_width = 1100;
+
   constructor(private elRef: ElementRef) {
     this.hostElement = this.elRef.nativeElement;
   }
@@ -76,7 +89,32 @@ export class ScatterComponent implements OnInit {
     this.data = this.data_week[this.selectedDay];
 
     this.fillDaysStruct();
-    this.updateChart(this.data);
+    this.updateChart(false);
+
+    
+
+    // d3.select(window).on("resize", function () {
+    //   const newWidth = parseFloat(d3.select("svg").style("width"));
+
+    //   //console.log("newWidth", newWidth);
+
+    //   if (_that.viewport_width > _that.md_break && newWidth < _that.md_break) {
+
+    //     // from big to small
+    //     console.log("from big to small --> REDRAW");
+    //       _that.updateChart(true);
+
+    //   }
+
+
+    //   if (_that.viewport_width < _that.md_break && newWidth > _that.md_break) {
+
+    //     // from small to big
+    //     console.log("from small to big --> REDRAW");
+    //      _that.updateChart(true);
+    //   }
+
+    // });
 
   }
 
@@ -95,46 +133,93 @@ export class ScatterComponent implements OnInit {
 
   }
 
-  public updateChart(data: number[]) {
-    if (!this.svg) {
-      this.addTooltip();
-      this.createChart(data);
+  public updateChart(redraw) {
+    if (!this.svg || redraw) {
+      // TODO anche le dimensioni del tooltip devono essere rapportate al view port
+      this.addTooltip(redraw);
+      this.createChart(redraw);
       return;
     }
     else {
 
       this.setScale();
       this.addDots();
+      return;
     }
   }
 
-  private createChart(data) {
+  private createChart(redraw) {
 
-    this.setChartDimensions();
+    this.setChartDimensions(redraw);
     this.setScale();
-    this.addGraphicsElement();
+    this.addGraphicsElement(redraw);
     this.addDots();
 
   }
 
-  private setChartDimensions() {
+  private setChartDimensions(redraw) {
+
+    console.log("setChartDimensions " + redraw);
+
+    if (redraw) {
+      d3.select("svg").remove();
+      this.svg = null;
+    }
 
     this.svg = d3.select(this.hostElement).append('svg')
       .attr('width', '100%')
-      .attr('height', '100%').attr("id", "mysvg")
+      .attr('height', '100%').attr("id", "mysvg");
+
+     
+    //on chart resize
+    //https://medium.com/@maheshsenni/responsive-svg-charts-viewbox-may-not-be-the-answer-aaf9c9bc4ca2
+    //https://www.visualcinnamon.com/2019/04/mobile-vs-desktop-dataviz/
 
     this.viewport_width = parseInt(this.svg.style("width"));
     this.viewport_height = parseInt(this.svg.style("height"));
 
-    this.inner_width = parseInt(this.svg.style("width")) - (this.margin_side * 2);
-    this.inner_height = parseInt(this.svg.style("height")) - (this.margin_top * 2);
+    // get scale factor --> basewidth is max , viewport/max
+    this.scale_factor = Math.min(1, (this.viewport_width / this.base_width)) //TODO occhio ai decimali
+    console.log("scale factor", this.scale_factor);
+
+    this.inner_width = parseInt(this.svg.style("width")) - (this.margin_side*this.scale_factor * 2);
+    this.inner_height = parseInt(this.svg.style("height")) - (this.margin_top*this.scale_factor * 2);
 
     // set viewbox = viewport => zoom = 0, resizable
     this.svg.attr('viewBox', '0 0 ' + this.viewport_width + ' ' + this.viewport_height);
-    this.svg.attr("preserveAspectRatio", "xMinYMid");
-    console.log("svg width ", this.viewport_width, " svg height", this.viewport_height);
-    // console.log("svg width ", this.inner_width, " svg height", this.inner_height);
+    this.svg.attr("preserveAspectRatio", "xMinYMid ");
+
+    console.log("SCATTER - svg width ", this.viewport_width, " svg height", this.viewport_height);
+    console.log("SCATTER - svg INNER width ", this.inner_width, " svg INNER height", this.inner_height);
+    
+    
+
+    this.setScaledParams();
   }
+
+
+  private setScaledParams() {
+
+
+    this.btnGroup_offset_y = 20 * this.scale_factor; 
+    this.btn_r = 20 *this.scale_factor; // radius of button
+    this.btw_btn_distance = 52 *this.scale_factor;// distance between buttons
+  
+  
+    // legend XY
+    this.legendLbl_XY = [30*this.scale_factor, 15*this.scale_factor];
+    this.legend_lbl_distance = 10*this.scale_factor; 
+    this.legendXY_offset =this.inner_height - (this.btnGroup_offset_y); 
+  
+    ///////////
+ 
+    this.max_d_fixed = 50*this.scale_factor; // this controls max circles sizes
+    this.min_d_fixed = 1;// this controls min circles sizes
+  
+    this.main_offsetY = this.btnGroup_offset_y + this.btn_r * 2 + this.btn_r; // da dove inizio ad appendere i btn + btn diametro + smth
+    
+  }
+
 
   private setScale() {
 
@@ -162,9 +247,13 @@ export class ScatterComponent implements OnInit {
   }
 
 
-  private addGraphicsElement() {
+  private addGraphicsElement(redraw) {
 
 
+    if (redraw) {
+      this.svg.select("main").remove();
+      this.g = null;
+    }
     // main group
     this.g = this.svg.append("g")
       .attr("transform", "translate(0," + this.main_offsetY + ")") // move down to make space to buttons -> buttons are on separate g because they dont'have to overlap chart   
@@ -213,7 +302,7 @@ export class ScatterComponent implements OnInit {
                 .duration(400)
                 .style("opacity", .9)
 
-             
+
               //get inverse position for translated group so it works also when resized
               var pt = _that.svg.node().createSVGPoint();
               pt.x = d3.pointer(ev)[0];
@@ -222,8 +311,8 @@ export class ScatterComponent implements OnInit {
 
               _that.tip.html(html)
                 .style("left", pt.x + "px")
-                .style("top",  pt.y + "px")
-             
+                .style("top", pt.y + "px")
+
 
             })
             .on('mouseout', d => {
@@ -278,12 +367,16 @@ export class ScatterComponent implements OnInit {
 
 
 
-  private addTooltip() {
+  private addTooltip(redraw) {
 
 
     // html tooltip vs g tooltip
     // https://stackoverflow.com/questions/43613196/using-div-tooltips-versus-using-g-tooltips-in-d3/43619702
 
+    if (redraw) {
+      this.tip.remove();
+
+    }
     // i choose html for simplicity now
     this.tip = d3.select(this.hostElement).append("div")
       .attr("class", "tooltip  text")
@@ -315,20 +408,18 @@ export class ScatterComponent implements OnInit {
 
   private addLegend_Diameter() {
 
-
-    const x_legend = this.inner_width - 200;
     const dataLegend = [{ "value": this.min_d, "label": "Min Km" }, { "value": this.max_d, "label": "Max Km" }];
 
     // add legend group outside main so that it does not overlap with chart
     const legendGroup = this.svg.append("g")
       .attr("class", "legend")
-      .attr("transform", "translate(" + x_legend + "  , 0)");
+  
 
     legendGroup
       .append("text")
       .attr("class", "bold")
-      .attr("x", 50)
-      .attr("y", 12)
+      .attr("x", this.calc_legendCircle_cx(0) - this.d(this.min_d)) // la x del primo cerchio - quanto occupa il primo cerchio this.min_d_fixed == d(this.min_d)
+      .attr("y", 21*this.scale_factor)
       .attr("text-anchor", "start")
       .text("DIAMETER")
 
@@ -352,8 +443,8 @@ export class ScatterComponent implements OnInit {
       .attr("class", "legend-dot")
       .attr("class", "dot")
       .attr("r", d => this.d(d.value))
-      .attr("cy", this.max_d_fixed + 2) // max_d_fixed cosi il più grande è sempre dentro svg
-      .attr("cx", (d, i) => i * 130 + 50);//3
+      .attr("cy",  this.calc_legendCircle_cy()) // max_d_fixed cosi il più grande è sempre dentro svg + smth
+      .attr("cx", (d, i) => this.calc_legendCircle_cx(i));//3
 
 
     const legendCenters = legendGroup.selectAll(".legend-dot")
@@ -365,27 +456,41 @@ export class ScatterComponent implements OnInit {
       .attr("class", "center-legend")
       .style("fill", "#2AF598")
       .attr("r", this.min_d_fixed)
-      .attr("cy", this.max_d_fixed + 2)
-      .attr("cx", (d, i) => i * 130 + 50);//2
+      .attr("cy",  this.calc_legendCircle_cy())
+      .attr("cx", (d, i) =>  this.calc_legendCircle_cx(i));//2
 
     legendCenters.append("text")
-      .attr("x", (d, i) => i * 130 + 60) //1
-      .attr("y", this.max_d_fixed + 2)
+      .attr("x", (d, i) => this.calc_legendCircle_cx(i) + 10*this.scale_factor ) 
+      .attr("y", this.calc_legendCircle_cy())
       .attr("text-anchor", "start")
       .attr("class", "text")
       .text(d => d.label)
 
+      // translate at the end so that   x = inner_width - legendGroup width
+      let bbox = legendGroup.node().getBBox();
+      let legend_x = this.inner_width - bbox.width - bbox.x;
+      legendGroup.attr("transform", "translate(" + legend_x + " ," + 0 + ")");
+
   }
+
+private calc_legendCircle_cx(i){
+ 
+ return i*150*this.scale_factor;
+}
+
+private calc_legendCircle_cy(){
+  return this.max_d_fixed + 15*this.scale_factor  // 12 è la distanza tra testo DIAM e cerchi nella legend
+}
 
   private addLegend_XY() {
 
     const _that = this;
-    const offset = this.inner_height - (this.btnGroup_offset_y);
+
 
     const legendUomGroup =
       this.g.append("g")
         .classed("legend-uom", true)
-        .attr("transform", "translate(0 " + offset + ")")
+        .attr("transform", "translate(0 " + this.legendXY_offset + ")")
 
     //load sv images --> TODO: qui l'import è un po' grezzo, si riesce a non schiantare il path ad asset?
     Promise.all([
@@ -402,10 +507,14 @@ export class ScatterComponent implements OnInit {
 
         let txt = g_up.append("text");
 
+        //TODO qui x e y si possono ricavare dalla freccia?
+
         txt.append("tspan")
           .attr("class", "bold")
-          .attr("x", 30)
-          .attr("y", 20)
+          .attr("x", this.legendLbl_XY[0])
+          .attr("y", this.legendLbl_XY[1])
+          // .attr("x", 30)
+          // .attr("y", 20)
           .attr("text-anchor", "start")
           .attr('alignment-baseline', 'middle')
           .text("DISTANCE");
@@ -418,7 +527,7 @@ export class ScatterComponent implements OnInit {
 
         //// legend RIGHT
         let bbox = g_up.node().getBBox();
-        let y = parseFloat(bbox.height + bbox.y) + 20;
+        let y = parseFloat(bbox.height + bbox.y) + this.legend_lbl_distance;
         let g_rigth = legendUomGroup.append("g").attr("transform", "translate(0," + y + ")")
 
         g_rigth.node().appendChild(right.documentElement)
@@ -456,10 +565,10 @@ export class ScatterComponent implements OnInit {
       .text("Select one day to update the chart")
       .attr("class", "text")
 
-    
+
     ///////////////////////////////////////////////////////////////////////////
-     let bbox = buttonGroup.node().getBBox();
-     let y = bbox.height + 15; // text y =>height og btn_g + smth;
+    let bbox = buttonGroup.node().getBBox();
+    let y = bbox.height + 15; // text y =>height og btn_g + smth;
 
     const buttons = buttonGroup.selectAll(".btn-wrap").data(this.day_array);
 
@@ -482,7 +591,7 @@ export class ScatterComponent implements OnInit {
       .attr("x", (d, i) => this.calc_btn_x(d, i))
       .attr("y", y)
       .attr("class", (d) => d.value !== this.selectedDay ? "text day-lbl" : " day-lbl__selected")
-      .style('font-size', this.btn_r * 0.6 + 'px')
+      .style('font-size', this.btn_r * 0.7 + 'px')
       .attr('alignment-baseline', 'middle')
       .attr("text-anchor", "middle")
       .text(d => d.label);
@@ -498,7 +607,8 @@ export class ScatterComponent implements OnInit {
   }
 
   private calc_btn_x(d, i) {
-    return i * 52 + this.btn_r * 1.1 + 3
+    //return i * 52 + this.btn_r * 1.1 + 3
+    return i * this.btw_btn_distance + this.btn_r * 1.1 + 3
   }
 
   private onDayMouseover(ev) {
@@ -548,7 +658,7 @@ export class ScatterComponent implements OnInit {
       // ho cambiato giorno
       this.selectedDay = new_sel[0]["value"];
       this.data = this.data_week[this.selectedDay];
-      this.updateChart(this.data);
+      this.updateChart(false);
     }
 
 

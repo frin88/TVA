@@ -138,7 +138,7 @@ export class Top5Component implements OnInit {
     // set viewbox = viewport => zoom = 0, resizable
     this.svg.attr('viewBox', '0 0 ' + this.viewport_width + ' ' + this.viewport_height);
     this.svg.attr("preserveAspectRatio", "xMinYMid");
-    console.log("svg width ", this.viewport_width, " svg height", this.viewport_height);
+   // console.log("svg width ", this.viewport_width, " svg height", this.viewport_height);
     // console.log("svg width ", this.inner_width, " svg height", this.inner_height);
   }
  

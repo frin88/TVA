@@ -8,6 +8,7 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { Top5Component } from './charts/top5/top5.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { TestComponent } from './charts/test/test.component';
 
 
 
@@ -18,7 +19,8 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
     DashboardComponent,
    // PieComponent,
     ScatterComponent,
-    Top5Component
+    Top5Component,
+    TestComponent
     
   ],
   imports: [
