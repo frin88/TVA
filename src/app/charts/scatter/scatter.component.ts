@@ -95,28 +95,20 @@ export class ScatterComponent implements OnInit {
     this.updateChart(false);
 
 
-
+    //TODO  ENQUIRE JS AND FORCE REDRAW WHEN BREAKPOINT IS HIT INSTEAD OF THIS
     // d3.select(window).on("resize", function () {
     //   const newWidth = parseFloat(d3.select("svg").style("width"));
-
     //   //console.log("newWidth", newWidth);
-
     //   if (_that.viewport_width > _that.md_break && newWidth < _that.md_break) {
-
     //     // from big to small
     //     console.log("from big to small --> REDRAW");
     //       _that.updateChart(true);
-
     //   }
-
-
     //   if (_that.viewport_width < _that.md_break && newWidth > _that.md_break) {
-
     //     // from small to big
     //     console.log("from small to big --> REDRAW");
     //      _that.updateChart(true);
     //   }
-
     // });
 
   }
@@ -138,7 +130,6 @@ export class ScatterComponent implements OnInit {
 
   public updateChart(redraw) {
     if (!this.svg || redraw) {
-      // TODO anche le dimensioni del tooltip devono essere rapportate al view port
       this.addTooltip(redraw);
       this.createChart(redraw);
       return;
@@ -162,7 +153,7 @@ export class ScatterComponent implements OnInit {
 
   private setChartDimensions(redraw) {
 
-    console.log("setChartDimensions " + redraw);
+   // console.log("setChartDimensions " + redraw);
 
     if (redraw) {
       d3.select("svg").remove();
@@ -178,11 +169,15 @@ export class ScatterComponent implements OnInit {
     //https://medium.com/@maheshsenni/responsive-svg-charts-viewbox-may-not-be-the-answer-aaf9c9bc4ca2
     //https://www.visualcinnamon.com/2019/04/mobile-vs-desktop-dataviz/
 
+    // for now i hide sidebar (top5 component) and rescale scatter component down
+    // when a media breakpoint is hit i will redraw the chart with new scale factor
+    // viewbox take care of resizing within brekpoints
+
     this.viewport_width = parseInt(this.svg.style("width"));
     this.viewport_height = parseInt(this.svg.style("height"));
 
     // get scale factor --> basewidth is max , scale = viewport/max
-    this.scale_factor = Math.min(1, (this.viewport_width / this.base_width)).toFixed(2) //TODO occhio ai decimali per performance
+    this.scale_factor = Math.min(1, (this.viewport_width / this.base_width)).toFixed(2) //occhio ai decimali per performance
     console.log("scale factor", this.scale_factor);
 
     this.inner_width = parseInt(this.svg.style("width")) - (this.margin_side * this.scale_factor * 2);
@@ -248,7 +243,7 @@ export class ScatterComponent implements OnInit {
       .domain([0, this.max_d])
       .range([this.min_d_fixed, this.max_d_fixed]); // max_d_fixed is reference point for legend
 
-
+      //font scale
     this.f = d3.scaleLinear()
       .domain([1, this.base_width])
       .range([9, 13])
@@ -374,8 +369,6 @@ export class ScatterComponent implements OnInit {
 
   }
 
-
-
   private addTooltip(redraw) {
 
 
@@ -414,7 +407,7 @@ export class ScatterComponent implements OnInit {
 
   }
 
-
+//legend diameter
   private addLegend_Diameter() {
 
     const dataLegend = [{ "value": this.min_d, "label": "Min Km" }, { "value": this.max_d, "label": "Max Km" }];
@@ -495,14 +488,13 @@ export class ScatterComponent implements OnInit {
   private calc_legendCircle_cy() {
     return this.max_d_fixed + this.legendcircle_from_title;
   }
-
+//legend  XY
   private addLegend_XY() {
 
     const legendUomGroup =
       this.g.append("g")
         .classed("legend-uom", true)
-    //  .attr("transform", "translate(0 " + this.legendXY_offset + ")")
-
+   
     //load sv images --> TODO: qui l'import è un po' grezzo, si riesce a non schiantare il path ad asset?
     Promise.all([
       d3.xml("../../assets/arrow-right.svg"),
@@ -579,6 +571,7 @@ export class ScatterComponent implements OnInit {
 
   }
 
+//btn groups
   private addBtnGroup() {
 
     const buttonGroup = this.svg.append("g")
@@ -692,7 +685,7 @@ export class ScatterComponent implements OnInit {
 
   }
 
-
+// helpers
   private createCustomDef() {
 
     const defs = this.svg.append("defs");
@@ -730,7 +723,6 @@ export class ScatterComponent implements OnInit {
 
 
   }
-
 
   private getToday() {
 

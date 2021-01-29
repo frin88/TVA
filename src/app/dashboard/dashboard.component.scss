@@ -1,8 +1,5 @@
 @import "~src/styles";
 
-
-
-
 :host {
     display: flex;
     justify-content: space-evenly;
@@ -129,19 +126,18 @@
             font-size: 1.5rem;
         }
 
-        #dayAsteroids{border-right: none;}// hide sidebar for now
-        #weekMagnitudo{display: none;}
-
-       fill:deeppink;
-       color:deeppink;
+        #dayAsteroids{border-right: none};
+        #weekMagnitudo{display: none;}// hide sidebar for now --> maybe change direction and redraw later
+    //    fill:deeppink;
+    //    color:deeppink;
     }
   }
   
   @media screen and (max-width: 414px) {
     .container {
-        #dayAsteroids{border-right: none;}// hide sidebar for now
+        #dayAsteroids{border-right: none;}
         #weekMagnitudo{display: none;}
-        fill:yellow;
-        color:yellow;
+        // fill:yellow;
+        // color:yellow;
     }
   }

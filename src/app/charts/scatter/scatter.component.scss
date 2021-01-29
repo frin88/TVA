@@ -36,5 +36,13 @@ line{stroke-width:1;}
     margin: 0.5em;
   }
 
+  
+
 }
 
+@media screen and (max-width: 767px) {
+  .tooltip {
+    max-width: 210px;
+    font-size: 11px;    
+  }
+}
