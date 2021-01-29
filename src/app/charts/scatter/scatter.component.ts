@@ -513,8 +513,6 @@ private calc_legendCircle_cy(){
           .attr("class", "bold")
           .attr("x", this.legendLbl_XY[0])
           .attr("y", this.legendLbl_XY[1])
-          // .attr("x", 30)
-          // .attr("y", 20)
           .attr("text-anchor", "start")
           .attr('alignment-baseline', 'middle')
           .text("DISTANCE");
