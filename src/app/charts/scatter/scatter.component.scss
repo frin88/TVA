@@ -29,11 +29,11 @@ line{stroke-width:1;}
   box-shadow: 0 0 20px 0 rgba(255,255,255,0.1), 0 2px 4px 0 rgba(0,0,0,0.5);
   min-width: 180px;
   border:1px solid $white;
-  padding:1em;
+  padding:1rem;
   background: linear-gradient(180deg, #0A1D19 0%, #184159 86.84%, #19435D 100%);
   pointer-events:none; //https://stackoverflow.com/questions/35359400/mouse-moves-faster-than-tooltip
   p {
-    margin: 0.5em;
+    margin: 0.5rem;
   }
 
   
@@ -42,7 +42,12 @@ line{stroke-width:1;}
 
 @media screen and (max-width: 767px) {
   .tooltip {
-    max-width: 210px;
-    font-size: 11px;    
+    max-width: 200px;
+    min-width: 150px;
+  
+    p {
+      margin: 0.2rem;
+    }
+      
   }
 }

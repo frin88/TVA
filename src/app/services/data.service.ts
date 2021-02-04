@@ -21,7 +21,8 @@ export class DataService {
 
     console.log('requesting data from : ', string_dates.start, " to: " + string_dates.end);
     //filtering result for near_earth_objects
-    return this.httpClient.get<any>(this.env.apiUrl + '?api_key=' + this.env.apiKey + '&start_date=' + string_dates.start + '&end_date=' + string_dates.end).pipe(
+    return this.httpClient.get<any>(this.env.apiUrl + '?api_key=' + this.env.apiKey + '&start_date=' + string_dates.start + '&end_date=' + string_dates.end)
+    .pipe(
       filter(data => data.near_earth_objects != null),
       map(res => res.near_earth_objects)
     );

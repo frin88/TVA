@@ -148,7 +148,7 @@ export class Top5Component implements OnInit {
     // main group
     this.g = this.svg.append("g")
       //.attr("transform", "translate(0,0)")
-      .attr("transform", "translate(0," + this.chartOffset_y + ")") // move down to make space to buttons
+      .attr("transform", "translate(0," + this.chartOffset_y + ")") // move down to make space to legend
       .attr("class", "main");
 
     this.createCustomDef();

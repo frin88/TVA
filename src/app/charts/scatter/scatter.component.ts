@@ -95,22 +95,7 @@ export class ScatterComponent implements OnInit {
     this.updateChart(false);
 
 
-    //TODO  ENQUIRE JS AND FORCE REDRAW WHEN BREAKPOINT IS HIT INSTEAD OF THIS
-    // d3.select(window).on("resize", function () {
-    //   const newWidth = parseFloat(d3.select("svg").style("width"));
-    //   //console.log("newWidth", newWidth);
-    //   if (_that.viewport_width > _that.md_break && newWidth < _that.md_break) {
-    //     // from big to small
-    //     console.log("from big to small --> REDRAW");
-    //       _that.updateChart(true);
-    //   }
-    //   if (_that.viewport_width < _that.md_break && newWidth > _that.md_break) {
-    //     // from small to big
-    //     console.log("from small to big --> REDRAW");
-    //      _that.updateChart(true);
-    //   }
-    // });
-
+    //TODO download enquire.js  and force redraw (this.updateChart(true)) when a brekpoint is hit     
   }
 
 
@@ -177,7 +162,7 @@ export class ScatterComponent implements OnInit {
     this.viewport_height = parseInt(this.svg.style("height"));
 
     // get scale factor --> basewidth is max , scale = viewport/max
-    this.scale_factor = Math.min(1, (this.viewport_width / this.base_width)).toFixed(2) //occhio ai decimali per performance
+    this.scale_factor = parseFloat(Math.min(1, (this.viewport_width / this.base_width)).toFixed(2) )//occhio ai decimali per performance
     console.log("scale factor", this.scale_factor);
 
     this.inner_width = parseInt(this.svg.style("width")) - (this.margin_side * this.scale_factor * 2);
@@ -187,7 +172,7 @@ export class ScatterComponent implements OnInit {
     this.svg.attr('viewBox', '0 0 ' + this.viewport_width + ' ' + this.viewport_height);
     this.svg.attr("preserveAspectRatio", "xMinYMid ");
 
-    // console.log("SCATTER - svg width ", this.viewport_width, " svg height", this.viewport_height);
+     console.log("SCATTER - svg width ", this.viewport_width, " svg height", this.viewport_height);
     // console.log("SCATTER - svg INNER width ", this.inner_width, " svg INNER height", this.inner_height);
 
     this.setScaledParams();
@@ -198,16 +183,16 @@ export class ScatterComponent implements OnInit {
 
 
     // button groups
-    this.btnGroup_offset_y = 20 * this.scale_factor; // distance buttons from top 20
-    this.btn_r = 20 * this.scale_factor; // radius of button //20
-    this.btw_btn_distance = 52 * this.scale_factor;// distance between buttons 52
+    this.btnGroup_offset_y =  this.scale_factor < 0.5 ? 20 * this.scale_factor *1.4 : 20*this.scale_factor // distance buttons from top 
+    this.btn_r =  this.scale_factor < 0.5 ? 20 * this.scale_factor *1.4 : 20*this.scale_factor  // radius of button 
+    this.btw_btn_distance =   this.scale_factor < 0.5 ? 52 * this.scale_factor *1.4 : 52 * this.scale_factor;// distance between buttons 
 
 
     // legend XY
     this.legendLbl_XY = [30 * this.scale_factor, 15 * this.scale_factor]; //coord of first legend item
     this.legend_lbl_distance = 10 * this.scale_factor; //y distance between legend  item
     this.legendXY_offset = this.inner_height - (this.btnGroup_offset_y);  // y of legend whole
-
+    this.legendXY_offset = this.scale_factor < 0.5 ? this.legendXY_offset -10 : this.legendXY_offset -5
     // legend Diameter
     this.max_d_fixed = 50 * this.scale_factor; // this controls max circles sizes
     this.min_d_fixed = 1;// this controls min circles sizes
@@ -244,10 +229,10 @@ export class ScatterComponent implements OnInit {
       .range([this.min_d_fixed, this.max_d_fixed]); // max_d_fixed is reference point for legend
 
       //font scale
-    this.f = d3.scaleLinear()
-      .domain([1, this.base_width])
-      .range([9, 13])
-      .clamp(true);
+    // this.f = d3.scaleLinear()
+    //   .domain([1, this.base_width])
+    //   .range([9, 13])
+    //   .clamp(true);
   }
 
 
@@ -424,9 +409,9 @@ export class ScatterComponent implements OnInit {
       .attr("y", 21 * this.scale_factor) //questo
       .attr("text-anchor", "start")
       .text("DIAMETER")
-      .style('font-size', this.f(this.viewport_width) + 'px')
 
-    console.log("font size at " + this.viewport_width + " is: " + this.f(this.viewport_width))
+
+  //  console.log("font size at " + this.viewport_width + " is: " + this.f(this.viewport_width))
 
 
     // cerchi MAX e MIN
@@ -468,8 +453,6 @@ export class ScatterComponent implements OnInit {
       .attr("x", (d, i) => this.calc_legendCircle_cx(i) + this.legend_lbl_from_cx)
       .attr("y", this.calc_legendCircle_cy())
       .attr("text-anchor", "start")
-      .style('font-size', this.f(this.viewport_width) + 'px')
-      //.style('font-size', this.btn_r * 0.7 + 'px')
       .attr("class", "text")
       .text(d => d.label)
 
@@ -516,19 +499,15 @@ export class ScatterComponent implements OnInit {
 
         txt.append("tspan")
           .attr("class", "bold")
-          .attr("x", this.legendLbl_XY[0] + 5)
+          .attr("x", this.legendLbl_XY[0] + 10)
           .attr("y", gup_bbox.width - gup_bbox.y) // text centerd in arrow
-         // .attr("x", this.legendLbl_XY[0] + 5)
-          //.attr("y", this.legendLbl_XY[1])
           .attr("text-anchor", "start")
           .attr('alignment-baseline', 'middle')
-          .style('font-size', this.f(this.viewport_width) + 'px')
           .text("DISTANCE");
         txt
           .append("tspan")
           .text("(au)")
           .attr("class", "text")
-          .style('font-size', this.f(this.viewport_width) + 'px')
           .attr("dx", 4);
 
 
@@ -543,25 +522,23 @@ export class ScatterComponent implements OnInit {
 
         txt2.append("tspan")
           .attr("class", "bold")
-          .attr("x", this.legendLbl_XY[0] + 5)
+          .attr("x", this.legendLbl_XY[0] + 10)
           .attr("y",  gup_bbox.width - gup_bbox.y)  //text centerd in arrow
           .attr("text-anchor", "start")
           .attr('alignment-baseline', 'middle')
-          .style('font-size', this.f(this.viewport_width) + 'px')
           .text("VELOCITY");
 
         txt2
           .append("tspan")
           .text("(km/s)")
           .attr("class", "text")
-          .style('font-size', this.f(this.viewport_width) + 'px')
           .attr("dx", 4);
 
 
           // translate at the end so i can calc y properly taking in account height
         let bbox3 = legendUomGroup.node().getBBox();
         
-        let y1 = this.legendXY_offset  - ( bbox3.y) - 5;
+        let y1 = this.legendXY_offset  - ( bbox3.y) ;
         legendUomGroup.attr("transform", "translate(0 " + y1 + ")")
 
 
@@ -582,7 +559,7 @@ export class ScatterComponent implements OnInit {
     buttonGroup.append("text")
       .text("Select one day to update the chart")
       .attr("class", "text")
-      .style('font-size', this.f(this.viewport_width) + 'px')
+
 
 
 
